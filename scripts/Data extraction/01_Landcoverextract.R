@@ -6,8 +6,7 @@ library(data.table)
 ### Simple example for landcover data (or any other data that is temporally static):
 Filesraster<-list.files('C:/Users/emitn/OneDrive/Documents/Stage/Stage Canada/landcover/tifraster')
 
-cariboumodel<-readRDS('~/Stage/Stage Canada/Caribou data/cariboumodel.Rds')
-
+cariboumodel<-caribouData
 ### Read in the landcover data using "raster"
 Conifer<-raster("Conifer100.tif")
 MixedWood<-raster("MixedWood100.tif")
@@ -22,7 +21,7 @@ Wetland<-raster("Wetland100.tif")
 ### Then use the extract function to get the value of the raster at the points
 ##example : ConiferData<-extract(x=Conifer,y=data.frame(caribouData$UTMX,caribouData$UTMY))
 
-Wetlanddata<-extract(x=Wetland, y=data.frame(cariboumodel$EASTING,cariboumodel$NORTHING))
+WetlandData<-extract(x=Wetland, y=data.frame(cariboumodel$EASTING,cariboumodel$NORTHING))
 
 ### This generates a vector of the values at all your locations, 
 ### but it's easiest to just append it to your dataset:
@@ -48,4 +47,5 @@ cariboumodel<-cariboumodel[, ConiferScrub := NULL]
 ###Save data 
 saveRDS(cariboumodel, '~/Git/emilie_nlcaribou/output/Data extraction/cariboumodel.Rds')
 write.csv(cariboumodel,'~/Git/emilie_nlcaribou/output/Data extraction/cariboumodel.csv')
+saveRDS(cariboumodel, '~/Stage/Stage Canada/Caribou data/cariboumodel.Rds')
 
