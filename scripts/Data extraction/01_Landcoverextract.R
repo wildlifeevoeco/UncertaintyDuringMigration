@@ -46,6 +46,6 @@ library(data.table)
 cariboumodel<-cariboumodel[, ConiferScrub := NULL]
 
 ###Save data 
-saveRDS(cariboumodel, '~/Stage/Stage Canada/Caribou data/cariboumodel.Rds')
-write.csv(cariboumodel,'~/Stage/Stage Canada/Caribou data/cariboumodel.csv')
+saveRDS(cariboumodel, '~/Git/emilie_nlcaribou/output/Data extraction/cariboumodel.Rds')
+write.csv(cariboumodel,'~/Git/emilie_nlcaribou/output/Data extraction/cariboumodel.csv')
 
