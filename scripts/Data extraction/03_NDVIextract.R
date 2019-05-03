@@ -81,11 +81,13 @@ DataSort2006$NDVI<-NDVIval2006
 #### back into the order it was in previously:
 DataReSort2006<-DataSort2006[order(DataSort2006$ptID),]
 
-
-saveRDS(DataReSort2006, '~/Stage/Stage Canada/Caribou data/DataReSort2006.Rds')
-save(DataReSort2006, file="~/Stage/Stage Canada/Caribou data/DataReSort2006.csv")
-
 ##Calculate number of herd that I have by year (!!Midridge!! and year 2006!!)
 
 length(unique(DataReSort2006$HERD))
+
+##Save data
+saveRDS(DataReSort2006, '~/Stage/Stage Canada/Caribou data/DataReSort2006.Rds')
+save(DataReSort2006, file="~/Stage/Stage Canada/Caribou data/DataReSort2006.csv")
+
+
 
