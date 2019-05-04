@@ -41,7 +41,6 @@ Forest<-Conifer+Broadleaf+MixedWood
 caribouData$Forest<-extract(x=Forest,y=data.frame(caribouData$UTMX,caribouData$UTMY))
 
 ###Delete a column 
-library(data.table)
 cariboumodel<-cariboumodel[, ConiferScrub := NULL]
 
 ###Save data 
