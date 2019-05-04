@@ -2,9 +2,9 @@
 
 #########  Extracting spatial data from rasters to points  ##############
 library(raster)
+library(data.table)
 libs <- c('data.table', 'rgdal')
-caribouData<-readRDS('~/Stage/Stage Canada/Caribou data/cleaned-locs.Rds')  
-
+caribouData<-readRDS('~/Git/emilie_nlcaribou/output/Data extraction/cleaned-locs.Rds')  
 
 ### remove 276 Julian day 
 caribouData <- caribouData[JDate >= 50 & JDate <= 275]
@@ -85,9 +85,31 @@ DataReSort2006<-DataSort2006[order(DataSort2006$ptID),]
 
 length(unique(DataReSort2006$HERD))
 
-##Save data
-saveRDS(DataReSort2006, '~/Stage/Stage Canada/Caribou data/DataReSort2006.Rds')
-save(DataReSort2006, file="~/Stage/Stage Canada/Caribou data/DataReSort2006.csv")
+###Replacing NAs with latest non-NA value (NDVI column)
+library(dplyr)
+library(data.table)
+##Check if there is NA values
+summary(DataReSort2013$NDVI)
 
+fill.NAs<-function(x) {is_na<-is.na(x); x[Reduce(function(i,j) if (is_na[j]) i else j, seq_len(length(x)), accumulate=T)]}
+DataReSort2013NA<-fill.NAs(c(DataReSort2013$NDVI))
 
+DataReSort2013$NDVI<-DataReSort2013NA
+summary(DataReSort2013$NDVI)  ##0 NA
 
+##Save NDVI data for each year 
+saveRDS(DataReSort2013, '~/Git/emilie_nlcaribou/output/Data extraction/NDVI/NDVI_NA/DataReSort2013.Rds')
+save(DataReSort2013, file="~/Git/emilie_nlcaribou/output/Data extraction/NDVI/NDVI_NA/DataReSort2013.csv")
+
+glimpse(out)
+out$state<-as.factor(out$state)
+out[, mean(step), by =.(state)]
+step1<-subset(out, state == "1")
+mean(step1$angle, na = TRUE)
+step2<-subset(out,state == "2")
+mean(step2$angle, na = TRUE)
+Data2006<-subset(caribouData, year=="2006")
+
+?bind_rows
+?cbind
+allNDVI<-rbind(DataReSort2006, DataReSort2007, DataReSort2008, DataReSort2009, DataReSort2010, DataReSort2011, DataReSort2012, DataReSort2013)
