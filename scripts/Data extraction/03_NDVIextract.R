@@ -102,14 +102,5 @@ saveRDS(DataReSort2013, '~/Git/emilie_nlcaribou/output/Data extraction/NDVI/NDVI
 save(DataReSort2013, file="~/Git/emilie_nlcaribou/output/Data extraction/NDVI/NDVI_NA/DataReSort2013.csv")
 
 glimpse(out)
-out$state<-as.factor(out$state)
-out[, mean(step), by =.(state)]
-step1<-subset(out, state == "1")
-mean(step1$angle, na = TRUE)
-step2<-subset(out,state == "2")
-mean(step2$angle, na = TRUE)
-Data2006<-subset(caribouData, year=="2006")
 
-?bind_rows
-?cbind
 allNDVI<-rbind(DataReSort2006, DataReSort2007, DataReSort2008, DataReSort2009, DataReSort2010, DataReSort2011, DataReSort2012, DataReSort2013)
