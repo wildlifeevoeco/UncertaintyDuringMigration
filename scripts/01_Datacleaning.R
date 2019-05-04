@@ -12,12 +12,12 @@ library(rgdal)
 lapply(libs,require, character.only = TRUE)
 
 ### read database and csv file ####
-Dt<-read.csv("~/Stage/Stage Canada/Caribou data/MoveHMM/1-CaribouDataSpringClean.csv")
-DT<-fread('~/Stage/Stage Canada/Caribou data/MoveHMM/1-CaribouDataSpringClean.csv')
+DT <- read_csv("~/Git/emilie_nlcaribou/input/1-CaribouDataSpringClean.CSV")
 
 ##summary of tab
 summary(DT$HERD)
 summary(DT)
+glimpse(DT)
 
 ##Transform to coord -> UTM
 utm21N <- '+proj=utm +zone=21 ellps=WGS84'
