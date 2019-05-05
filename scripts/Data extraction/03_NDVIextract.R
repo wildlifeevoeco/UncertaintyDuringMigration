@@ -101,6 +101,7 @@ summary(DataReSort2013$NDVI)  ##0 NA
 saveRDS(DataReSort2013, '~/Git/emilie_nlcaribou/output/Data extraction/NDVI/NDVI_NA/DataReSort2013.Rds')
 save(DataReSort2013, file="~/Git/emilie_nlcaribou/output/Data extraction/NDVI/NDVI_NA/DataReSort2013.csv")
 
-glimpse(out)
-
+##combine all tabs
 allNDVI<-rbind(DataReSort2006, DataReSort2007, DataReSort2008, DataReSort2009, DataReSort2010, DataReSort2011, DataReSort2012, DataReSort2013)
+
+saveRDS(allNDVI, '~/Git/emilie_nlcaribou/output/Data extraction/NDVI/NDVI_NA/allNDVI.Rds')
