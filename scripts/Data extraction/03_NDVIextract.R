@@ -3,8 +3,12 @@
 #########  Extracting spatial data from rasters to points  ##############
 library(raster)
 library(data.table)
-libs <- c('data.table', 'rgdal')
-caribouData<-readRDS('~/Git/emilie_nlcaribou/output/Data extraction/cleaned-locs.Rds')  
+library(dplyr)
+
+libs <- c('data.table', 'rgdal', 'dplyr')
+
+caribouData<-readRDS('~/Git/emilie_nlcaribou/output/Data extraction/out.Rds')  
+caribouData<-out
 
 ### remove 276 Julian day 
 caribouData <- caribouData[JDate >= 50 & JDate <= 275]
@@ -12,36 +16,34 @@ caribouData <- caribouData[JDate >= 50 & JDate <= 275]
 
 #### Subset down to only one year (this step needs to be done one year at a time)
 
-Data2006<-subset(caribouData, year=="2006")
+Data2013<-subset(caribouData, year=="2013")
 
 #### I first give it a point ID, to be able to re-sort it again later
-Data2006$ptID<-c(1:nrow(Data2006))
+Data2013$ptID<-c(1:nrow(Data2013))
 
 #### Now I order the dataframe by Julian Day
-DataSort2006<-Data2006[order(Data2006$JDate),]
+DataSort2013<-Data2013[order(Data2013$JDate),]
 
 #### Set the working directory to a folder with all the NDVI files for that year
 #### (doesn't seem to work without setting the WD)
-setwd('E:/NDVI/DailyNDVI_IRG/2013')
-setwd('C:/Users/emitn/OneDrive/Documents/Stage/Stage Canada/NDVI/DailyNDVI_IRG/2006')
+setwd('C:/Users/emitn/OneDrive/Documents/Stage/Stage Canada/NDVI/DailyNDVI_IRG/2013')
 
 #### Use List files to get the names of the files
-Files2013<-list.files('E:/NDVI/DailyNDVI_IRG/2013')
-Files2006<-list.files('C:/Users/emitn/OneDrive/Documents/Stage/Stage Canada/NDVI/DailyNDVI_IRG/2006')
+Files2013<-list.files('C:/Users/emitn/OneDrive/Documents/Stage/Stage Canada/NDVI/DailyNDVI_IRG/2013')
 
 #### This then iterates the "raster" function to read in and make
 #### a raster object for each day
-NDVIrasters2006<-sapply(Files2006, raster)
+NDVIrasters2013<-sapply(Files2013, raster)
 
 #### Here's the loop to extract the data for each day. It subsets the data to only include day i,
 #### and extracts the value of the raster which represents the data for day i.
 
 #### This generates a vector of NDVI values for each day ("NDVI2013070", "NDVI2013071", "NDVI2013072", etc)
 #### The first loop only loops over data until day 99
-for (i in min(DataSort2006$JDate):99){
-  assign(paste("NDVI2006",i,sep=""),extract(x=eval(parse(text=paste("NDVIrasters2006$Pred20060",i,".tif",sep=""))),
-                                            y=data.frame(subset(DataSort2006,JDate==i)$EASTING,
-                                                         subset(DataSort2006,JDate==i)$NORTHING)))
+for (i in min(DataSort2013$JDate):99){
+  assign(paste("NDVI2013",i,sep=""),extract(x=eval(parse(text=paste("NDVIrasters2013$Pred20130",i,".tif",sep=""))),
+                                            y=data.frame(subset(DataSort2013,JDate==i)$EASTING,
+                                                         subset(DataSort2013,JDate==i)$NORTHING)))
 }
 
 #### This code is the same but for day 100 +
@@ -49,11 +51,11 @@ for (i in min(DataSort2006$JDate):99){
 #### they won't match up with i (e.g., 71 versus 071). That's why the code above is "Pred20130"
 #### and the one below is "Pred2013"
 
-for (i in 100:max(DataSort2006$JDate)){
+for (i in 100:max(DataSort2013$JDate)){
   print(i)
-  assign(paste("NDVI2006",i,sep=""),extract(x=eval(parse(text=paste("NDVIrasters2006$Pred2006",i,".tif",sep=""))),
-                                            y=data.frame(subset(DataSort2006,JDate==i)$EASTING,
-                                                         subset(DataSort2006,JDate==i)$NORTHING)))
+  assign(paste("NDVI2013",i,sep=""),extract(x=eval(parse(text=paste("NDVIrasters2013$Pred2013",i,".tif",sep=""))),
+                                            y=data.frame(subset(DataSort2013,JDate==i)$EASTING,
+                                                         subset(DataSort2013,JDate==i)$NORTHING)))
 }
 
 
@@ -63,11 +65,11 @@ for (i in 100:max(DataSort2006$JDate)){
 #### of the previous loop with the data from the next day:
 
 t <- 1    
-for(i in min(DataSort2006$JDate):max(DataSort2006$JDate)){
+for(i in min(DataSort2013$JDate):max(DataSort2013$JDate)){
   if (t==1){
-    NDVIval2006 <- eval(parse(text=paste("NDVI2006",i,sep="")))
+    NDVIval2013 <- eval(parse(text=paste("NDVI2013",i,sep="")))
   } else {
-    NDVIval2006 <- c(NDVIval2006, eval(parse(text=paste("NDVI2006",i,sep=""))))
+    NDVIval2013 <- c(NDVIval2013, eval(parse(text=paste("NDVI2013",i,sep=""))))
   }
   t <- t+1
 }
@@ -75,22 +77,23 @@ for(i in min(DataSort2006$JDate):max(DataSort2006$JDate)){
 
 #### Then this vector can be re-attached to the original dataframe as the vector
 #### of NDVI values
-DataSort2006$NDVI<-NDVIval2006
+DataSort2013$NDVI<-NDVIval2013
 
 #### This can then be resorted by the point ID created earlier to put the data
 #### back into the order it was in previously:
-DataReSort2006<-DataSort2006[order(DataSort2006$ptID),]
+DataReSort2013<-DataSort2013[order(DataSort2013$ptID),]
 
 ##Calculate number of herd that I have by year (!!Midridge!! and year 2006!!)
 
-length(unique(DataReSort2006$HERD))
+length(unique(DataReSort2013$HERD))
 
-###Replacing NAs with latest non-NA value (NDVI column)
-library(dplyr)
-library(data.table)
 ##Check if there is NA values
 summary(DataReSort2013$NDVI)
 
+###remove NA from NDVI column
+DataReSort2013<-na.omit(DataReSort2013, cols = "NDVI", invert = FALSE)
+
+###Replacing NAs with latest non-NA value (NDVI column)
 fill.NAs<-function(x) {is_na<-is.na(x); x[Reduce(function(i,j) if (is_na[j]) i else j, seq_len(length(x)), accumulate=T)]}
 DataReSort2013NA<-fill.NAs(c(DataReSort2013$NDVI))
 
@@ -105,3 +108,8 @@ save(DataReSort2013, file="~/Git/emilie_nlcaribou/output/Data extraction/NDVI/ND
 allNDVI<-rbind(DataReSort2006, DataReSort2007, DataReSort2008, DataReSort2009, DataReSort2010, DataReSort2011, DataReSort2012, DataReSort2013)
 
 saveRDS(allNDVI, '~/Git/emilie_nlcaribou/output/Data extraction/NDVI/NDVI_NA/allNDVI.Rds')
+
+###know which rows is duplicate
+allNDVI$ANIMAL_ID[duplicated(caribouData$ANIMAL_ID)]
+allNDVI<-allNDVI[!duplicated(allNDVI$V1), ]
+
