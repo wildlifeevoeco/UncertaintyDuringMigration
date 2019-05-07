@@ -6,7 +6,6 @@ library(data.table)
 ### Simple example for landcover data (or any other data that is temporally static):
 Filesraster<-list.files('C:/Users/emitn/OneDrive/Documents/Stage/Stage Canada/landcover/tifraster')
 
-cariboumodel<-caribouData
 ### Read in the landcover data using "raster"
 Conifer<-raster("Conifer100.tif")
 MixedWood<-raster("MixedWood100.tif")
@@ -44,6 +43,7 @@ caribouData$Forest<-extract(x=Forest,y=data.frame(caribouData$UTMX,caribouData$U
 cariboumodel<-cariboumodel[, ConiferScrub := NULL]
 
 ###Save data 
+cariboumodel<-allNDVI
 saveRDS(cariboumodel, '~/Git/emilie_nlcaribou/output/Data extraction/cariboumodel.Rds')
 write.csv(cariboumodel,'~/Git/emilie_nlcaribou/output/Data extraction/cariboumodel.csv')
 saveRDS(cariboumodel, '~/Stage/Stage Canada/Caribou data/cariboumodel.Rds')
