@@ -160,7 +160,6 @@ summary(Meanalltab$total_precip_all)
 saveRDS(Finalclimate, '~/Stage/Stage Canada/Caribou data/Finalclimate.Rds')
 write.csv(Finalclimate,'~/Stage/Stage Canada/Caribou data/Finalclimate.csv')
 
-
 climate<-read.csv('~/Stage/Stage Canada/Caribou data/Finalclimate.csv')
 
 cariboumodel<-readRDS('~/Stage/Stage Canada/Caribou data/cariboumodel.Rds')
