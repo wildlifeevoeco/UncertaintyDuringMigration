@@ -5,6 +5,9 @@ lapply(libs, require, character.only = TRUE)
 ### Input raw data ----
 locs <- readRDS('~/Git/emilie_nlcaribou/output/cleaned-locs.Rds')
 
+###remove Pothill from locs tab (This herd not migrate enough)
+locs<- subset(locs, HERD != "POTHILL")
+
 ### Functions ----
 PrepHerd <- function(in.dt){
   prepData(in.dt[, .(EASTING, NORTHING, ID = ANIMAL_ID, HERD)],
@@ -22,11 +25,10 @@ grey <- PrepHerd(locs[HERD == 'GREY'])
 lap <- PrepHerd(locs[HERD == 'LAPOILE'])
 
 # MIDDLE RIDGE
-head(MIDRIDGE)
 mid <- PrepHerd(locs[HERD == 'MIDRIDGE'])
 
 # POTHILL
-pot <- PrepHerd(locs[HERD == 'POTHILL'])
+pot <- PrepHerd(locs[HERD == 'POTHILL'])     ####not need to run
 
 # TOPSAILS
 top <- PrepHerd(locs[HERD == 'TOPSAILS'])
@@ -69,7 +71,7 @@ mid.params <- list(
   # stationary = TRUE,
   fit = TRUE
 )
-pot.params <- list(
+pot.params <- list(             ###not need to run
   data = pot,
   nbStates = 2,
   stepPar0 = c(100, 1000, 100, 300),
@@ -79,6 +81,7 @@ pot.params <- list(
   fit = TRUE,
   verbose = 2
 )
+
 top.params <- list(
   data = top,
   nbStates = 2,
@@ -91,7 +94,7 @@ top.params <- list(
 
 ### Fit HMM By Herd ----
 top.fit <- do.call(fitHMM, top.params)
-pot.fit <- do.call(fitHMM, pot.params)
+pot.fit <- do.call(fitHMM, pot.params)  #### not need to run 
 lap.fit <- do.call(fitHMM, lap.params)
 mid.fit <- do.call(fitHMM, mid.params)
 grey.fit <- do.call(fitHMM, grey.params)
@@ -126,6 +129,10 @@ aggregate(locs.w.states$state, locs.w.states[,c("state")], length)
 out <- merge(locs, locs.w.states, 
              by.x = c('EASTING', 'NORTHING', 'ANIMAL_ID'),
              by.y = c('x', 'y', 'ID'))
+
+###remove duplicates
+out$V1[duplicated(out$V1)]
+out<-out[!duplicated(out$V1), ]
 
 ### Output ----
 # Locs with states
