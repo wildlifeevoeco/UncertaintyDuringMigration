@@ -43,8 +43,7 @@ caribouData$Forest<-extract(x=Forest,y=data.frame(caribouData$UTMX,caribouData$U
 cariboumodel<-cariboumodel[, ConiferScrub := NULL]
 
 ###Save data 
-cariboumodel<-allNDVI
 saveRDS(cariboumodel, '~/Git/emilie_nlcaribou/output/Data extraction/cariboumodel.Rds')
-write.csv(cariboumodel,'~/Git/emilie_nlcaribou/output/Data extraction/cariboumodel.csv')
+save(cariboumodel, file ='~/Git/emilie_nlcaribou/output/Data extraction/cariboumodel.csv')
 saveRDS(cariboumodel, '~/Stage/Stage Canada/Caribou data/cariboumodel.Rds')
 
