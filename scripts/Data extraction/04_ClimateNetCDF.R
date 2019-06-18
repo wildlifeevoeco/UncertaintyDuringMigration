@@ -18,20 +18,13 @@ library(dplyr)
 #workdir <- "S:/Local-git/emilie_nlcaribou/Weather"
 #setwd(workdir)
 
-# Extent
-bounds <- st_bbox(readRDS('output/caribou-bbox.Rds'))
-
+# Bounding box of 100% MCP
+box <- readRDS('output/caribou-bbox.Rds')
 
 daymetEPSG <- '+proj=lcc +datum=WGS84 +lat_1=25 n +lat_2=60n +lat_0=42.5n +lon_0=100w'
 
-plot(bounds)
-plot(st_transform(bounds, daymetEPSG))
 
-
-transBounds <- st_transform(bounds, daymetEPSG)
-
-
-boundsBox <- st_bbox(transBounds) 
+transBox <- st_bbox(st_transform(st_as_sfc(box) , daymetEPSG))
 
 # set path and filename
 ncname <- "Weather/daymet_v3_tmax_2008_na.nc4"
@@ -39,16 +32,23 @@ ncname <- "Weather/daymet_v3_tmax_2008_na.nc4"
 nc <- tidync(ncname) 
 
 filtNC <- nc %>%
-  hyper_filter(x = between(x, boundsBox[['xmin']], boundsBox[['xmax']]),
-               y = between(y, boundsBox[['ymin']], boundsBox[['ymax']]))
+  hyper_filter(x = between(x, transBox[['xmin']], transBox[['xmax']]),
+               y = between(y, transBox[['ymin']], transBox[['ymax']]))
 
 
 readNC <- hyper_tibble(filtNC)
 
+
+## (Just to check)
+NL <- st_transform(st_read('input/NL-Bounds/NL-Bounds.shp'), daymetEPSG)
+
+library(ggplot2)
+library(data.table)
 DT <- data.table(readNC)
 ggplot(DT[time == min(time)]) + 
   geom_point(aes(x, y, color = tmax)) + 
-  geom_sf(data = transBounds, alpha = 0.25)
+  geom_sf(data = NL, alpha = 0.25)
+###
 
 #ncfname <- paste(ncname, ".nc4", sep = "")
 #dname <- "prcp"  # note: tmp means temperature (not temporary)
