@@ -12,9 +12,9 @@ utm21N <- '+proj=utm +zone=21 ellps=WGS84'
 ### Processing ----
 # Convert to a SpatialPointsDataFrame
 spdf <- SpatialPointsDataFrame(
-  coords = locs[, .(X, Y)],
-  proj4string = utm21N,
-  data = locs[, .(ID)]
+  coords = locs[, .(EASTING, NORTHING)],
+  proj4string = CRS(utm21N),
+  data = locs[, .(ANIMAL_ID)]
 )
 
 # Generate MCP
@@ -27,4 +27,4 @@ poly <- mcp(
 box <- bbox(poly)
 
 ### Output ----
-saveRDS('output/caribou-bbox.Rds')
+saveRDS(box, 'output/caribou-bbox.Rds')
