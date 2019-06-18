@@ -2,7 +2,7 @@
 
 
 ### Packages ----
-pkgs <- c('data.table', 'sp', 'adehabitatHR')
+pkgs <- c('data.table', 'sp', 'sf', 'adehabitatHR')
 p <- lapply(pkgs, library, character.only = TRUE)
 
 ### Data ----
@@ -24,7 +24,7 @@ poly <- mcp(
 )
 
 # Generate bbox
-box <- bbox(poly)
+box <- st_bbox(poly)
 
 ### Output ----
 saveRDS(box, 'output/caribou-bbox.Rds')
