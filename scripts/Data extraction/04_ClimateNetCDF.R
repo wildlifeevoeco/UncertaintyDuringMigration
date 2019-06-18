@@ -9,11 +9,11 @@ library(chron)
 
 ## select where netCDF are located
 getwd()
-workdir <- "~/Emilie_project/Git/emilie_nlcaribou/Climate"
+workdir <- "S:/Local-git/emilie_nlcaribou/Weather"
 setwd(workdir)
 
 # set path and filename
-ncname <- "daymet_v3_prcp_2006_na"
+ncname <- "daymet_v3_prcp_2008_na"
 ncfname <- paste(ncname, ".nc4", sep = "")
 dname <- "prcp"  # note: tmp means temperature (not temporary)
 
@@ -44,12 +44,14 @@ tunits
 
 gc()
 ###to do with lab computer (get a variable)
-prcp_array <- ncvar_get(ncin,dname)
+prcp_array <- ncvar_get(ncin,dname) ###size too big, not working
 dlname <- ncatt_get(ncin,dname,"long_name")
 dunits <- ncatt_get(ncin,dname,"units")
 fillvalue <- ncatt_get(ncin,dname,"_FillValue")
 dim(prcp_array)
 
+
+###############################not working
 # get global attributes
 title <- ncatt_get(ncin,0,"title")
 institution <- ncatt_get(ncin,0,"institution")
@@ -71,16 +73,46 @@ tyear <- as.integer(unlist(tdstr)[1])
 chron(time,origin=c(tmonth, tday, tyear))
 
 ##Replace netCDF fillvalues with NA
-tmp_array[tmp_array==fillvalue$value] <- NA
+tmp_array [tmp_array == fillvalue$value] <- NA
 
 length(na.omit(as.vector(tmp_array[,,1]))) ##calculate number of non-missing values
 
 
 # get a single slice or layer (January)
 m <- 1
-tmp_slice <- tmp_array[,,m]
+tmp_slice <- tmp_array [,,m]
 # slice map
 image(lon,lat,tmp_slice, col=rev(brewer.pal(10,"RdBu")))
+##############################
+
+
+
+###Test2
+workdir <- "S:/Local-git/emilie_nlcaribou/Weather"
+setwd(workdir)
+year <- "2008"
+ncname <- "prcp"
+ncfname <- paste(ncname, year, ".nc4", sep = "")
+ncin <- nc_open(ncfname, write = F)
+
+x <- ncvar_get(ncin, "x")
+y <- ncvar_get(ncin, "y")
+yearday <- ncvar_get(ncin, "yearday")
+nc_close(ncin)
+
+##Process for one year
+getNCDFClimate <- function (var, year) {
+  ncfname <- paste(var, year, ".nc4", sep="")
+  ncin <- nc_open(ncfname, write = T)
+  var.array <- ncvar_get (ncin, var)
+  nc_close(ncin)
+  var.vec.long <- as.vector(var.array)
+  return (var.vec.long)
+}
+
+vec.prcp <- getNCDFClimate("prcp", "2008")
+vec.prcp <- getNCDFClimate("prcp", "2009")
+
 
 
 
