@@ -1,21 +1,57 @@
+# install.packages('tidync')
+library(tidync)
+library(sf)
+library(dplyr)
+
 ##Extraction climate date from nc4 format (D.Fisher and Bartlein)
-library(ncdf4)
-library(RColorBrewer)
-library(lattice)
-library(raster)
-library(rasterVis)
-library(proj4)
-library(chron)
+# library(ncdf4)
+# library(RColorBrewer)
+# library(lattice)
+# library(raster)
+# library(rasterVis)
+# library(proj4)
+# library(chron)
 
 ## select where netCDF are located
-getwd()
-workdir <- "S:/Local-git/emilie_nlcaribou/Weather"
-setwd(workdir)
+# (since we're in an R project, we don't need to set the working directory)
+#getwd()
+#workdir <- "S:/Local-git/emilie_nlcaribou/Weather"
+#setwd(workdir)
+
+# Extent
+bounds <- st_read('input/NL-Bounds/NL-Bounds.shp')
+
+
+daymetEPSG <- '+proj=lcc +datum=WGS84 +lat_1=25 n +lat_2=60n +lat_0=42.5n +lon_0=100w'
+
+plot(bounds)
+plot(st_transform(bounds, daymetEPSG))
+
+
+transBounds <- st_transform(bounds, daymetEPSG)
+
+
+boundsBox <- st_bbox(transBounds)
 
 # set path and filename
-ncname <- "daymet_v3_prcp_2008_na"
-ncfname <- paste(ncname, ".nc4", sep = "")
-dname <- "prcp"  # note: tmp means temperature (not temporary)
+ncname <- "Weather/daymet_v3_tmax_2008_na.nc4"
+
+nc <- tidync(ncname) 
+
+filtNC <- nc %>%
+  hyper_filter(x = between(x, boundsBox[['xmin']], boundsBox[['xmax']]),
+               y = between(y, boundsBox[['ymin']], boundsBox[['ymax']]))
+
+
+readNC <- hyper_tibble(filtNC)
+
+DT <- data.table(readNC)
+ggplot(DT[time == min(time)]) + 
+  geom_point(aes(x, y, color = tmax)) + 
+  geom_sf(data = transBounds, alpha = 0.25)
+
+#ncfname <- paste(ncname, ".nc4", sep = "")
+#dname <- "prcp"  # note: tmp means temperature (not temporary)
 
 # open a NetCDF file
 ncin <- nc_open(ncfname)
