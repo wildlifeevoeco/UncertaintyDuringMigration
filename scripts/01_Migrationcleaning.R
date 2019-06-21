@@ -36,11 +36,11 @@ avgJDate <- mig %>%
             meanduration = mean(MigDuration),
             total.fixes = n())
 
-avgJDate$firststart <- round(avgJDate$firststart, digits = 0)
-avgJDate$laststart <- round(avgJDate$laststart, digits = 0)
-avgJDate$firstend <- round(avgJDate$firstend, digits = 0)
-avgJDate$lastend <- round(avgJDate$lastend, digits = 0)
-avgJDate$meanstart <- round(avgJDate$meanstart, digits = 0)
+avgJDate$firststart <- ceiling(avgJDate$firststart)
+avgJDate$laststart <- ceiling(avgJDate$laststart)
+avgJDate$firstend <- trunc(avgJDate$firstend, digits = 0)
+avgJDate$lastend <- trunc(avgJDate$lastend, digits = 0)
+avgJDate$meanstart <- round(avgJDate$meanstart)
 avgJDate$meanend <- round(avgJDate$meanend, digits = 1)
 avgJDate$meanduration <- round(avgJDate$meanduration, digits = 1)
 
@@ -61,7 +61,7 @@ avg <- mig %>%
 #firststart
 df <- data.table (Year = avg$Year,
                   JDate = avg$firststart)
-df$JDate <- trunc(df$JDate, digits = 0)
+df$JDate <- ceiling(df$JDate)
 date_info <- with(df, paste(Year, JDate))
 date <- strptime(date_info, "%Y %j")
 avg$firststart<- as.Date(date, format= "%Y-%m-%d")
@@ -69,7 +69,7 @@ avg$firststart<- as.Date(date, format= "%Y-%m-%d")
 #laststart
 df <- data.table (Year = avg$Year,
                   JDate = avg$laststart)
-df$JDate <- trunc(df$JDate, digits = 0)
+df$JDate <- ceiling(df$JDate)
 date_info <- with(df, paste(Year, JDate))
 date <- strptime(date_info, "%Y %j")
 avg$laststart<- as.Date(date, format= "%Y-%m-%d")
@@ -111,19 +111,9 @@ avg$meanduration <- round(avg$meanduration, digits = 1)
 
 write.csv(avg,'~/Emilie_project/Git/emilie_nlcaribou/output/datesgmigration.csv')
 
-
-
-## Subset data by migration dates and Midridge herd
+## Subset by Midridge herd
 caribouclean <- mig[Herd == 'MIDRIDGE']
 summary(caribouclean)
 caribouclean$FixDate <- as.character(caribouclean$FixDate, format = "%Y-%m-%d")
 
-#Year 2010
-y2010 <- caribouclean[Year == '2010']
-summary(y2010)
-y2010 <- y2010[JDate > 45 & JDate < 137]
-
-
-?subset
-y2010 <- data.table (Year = avg$Year,
-                  JDate = avg$firstend)
+saveRDS(caribouclean, '~/Emilie_project/Git/emilie_nlcaribou/output/caribouclean.Rds')
