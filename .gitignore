@@ -1,6 +1,6 @@
 # Directories with large files #
 ################################
-input/
+#input/
 output/
 Weather/
 *.nc4
