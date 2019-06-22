@@ -54,3 +54,7 @@ year <- caribouclean %>%
 #Number of dataindiv / herd and number year/indiv
 #caribouclean[, uniqueN (ANIMAL_ID), by =.(HERD)]
 #caribouclean[, uniqueN(year), by =.(ANIMAL_ID)]
+
+count_loc <-
+  caribouclean[, .(count = uniqueN(Easting)), by = .(Animal_ID, Year)]
+
