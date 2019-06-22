@@ -111,6 +111,8 @@ avg$meanduration <- round(avg$meanduration, digits = 1)
 
 write.csv(avg,'~/Emilie_project/Git/emilie_nlcaribou/output/datesgmigration.csv')
 
+saveRDS(mig, '~/Emilie_project/Git/emilie_nlcaribou/output/Allmigrationdates.Rds')
+
 ## Subset by Midridge herd
 caribouclean <- mig[Herd == 'MIDRIDGE']
 summary(caribouclean)
