@@ -4,7 +4,10 @@ lapply(libs, require, character.only = TRUE)
 
 ### Input raw data ----
 locs <- readRDS('~/Git/emilie_nlcaribou/output/caribouclean.Rds')
-locs <- caribouclean
+
+y2010 <- (caribouclean[Year == '2010'])
+locs <- y2010
+
 ###remove Pothill from locs tab (This herd not migrate enough)
 #locs<- subset(locs, HERD != "POTHILL")
 
@@ -110,11 +113,13 @@ DecodeAndPseudo <- function(x){
 }
 
 ls.fits <- list(top.fit, lap.fit, mid.fit, grey.fit, buch.fit)  
+ls.fits <- list(mid.fit)
+
 collect <- lapply(ls.fits, FUN = function(fit){
   DecodeAndPseudo(fit)
 })
 
-plot(top.fit,ask=TRUE,animals=NULL,breaks=20)
+plot(mid.fit,ask=TRUE,animals=NULL,breaks=20)
 
 
 # TODO(MB, CH): check error below
@@ -124,7 +129,7 @@ locs.w.states <- rbindlist(collect)
 
 ##number of movement and encamp values
 aggregate(locs.w.states$state, locs.w.states[,c("state")], length)
-
+summary(locs.w.states)
 # Merge the states back onto the locs
 out <- merge(locs, locs.w.states, 
              by.x = c('EASTING', 'NORTHING', 'ANIMAL_ID'),
