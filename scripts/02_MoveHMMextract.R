@@ -3,15 +3,15 @@ libs <- c('data.table', 'moveHMM', 'tseries')
 lapply(libs, require, character.only = TRUE)
 
 ### Input raw data ----
-locs <- readRDS('~/Git/emilie_nlcaribou/output/cleaned-locs.Rds')
-
+locs <- readRDS('~/Git/emilie_nlcaribou/output/caribouclean.Rds')
+locs <- caribouclean
 ###remove Pothill from locs tab (This herd not migrate enough)
-locs<- subset(locs, HERD != "POTHILL")
+#locs<- subset(locs, HERD != "POTHILL")
 
 ### Functions ----
 PrepHerd <- function(in.dt){
-  prepData(in.dt[, .(EASTING, NORTHING, ID = ANIMAL_ID, HERD)],
-           type = 'UTM', coordNames = c('EASTING', 'NORTHING'))
+  prepData(in.dt[, .(Easting, Northing, ID = Animal_ID, Herd)],
+           type = 'UTM', coordNames = c('Easting', 'Northing'))
 }
 
 ### Prep Data By Herd ----
@@ -25,7 +25,7 @@ grey <- PrepHerd(locs[HERD == 'GREY'])
 lap <- PrepHerd(locs[HERD == 'LAPOILE'])
 
 # MIDDLE RIDGE
-mid <- PrepHerd(locs[HERD == 'MIDRIDGE'])
+mid <- PrepHerd(locs[Herd == 'MIDRIDGE'])
 
 # POTHILL
 pot <- PrepHerd(locs[HERD == 'POTHILL'])     ####not need to run
