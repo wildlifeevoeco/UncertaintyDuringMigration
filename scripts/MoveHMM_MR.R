@@ -66,9 +66,19 @@ locs.w.states <- rbindlist(collect)
 
 ##number of movement and encamp values
 aggregate(locs.w.states$state, locs.w.states[,c("state")], length)
+#state     x
+# 1     28282
+# 2      9930
+
 summary(locs.w.states)
 
 # Merge the states back onto the locs
-out <- merge(locs, locs.w.states, 
-             by.x = c('EASTING', 'NORTHING', 'ANIMAL_ID'),
+out <- merge(MigrMidR, locs.w.states, 
+             by.x = c('Easting','Northing','IDYear'),
              by.y = c('x', 'y', 'ID'))
+MigrMidR$ptID<-c(1:nrow(MigrMidR))
+
+out$ptID[duplicated(out$ptID)]
+out<-out[!duplicated(out$ptID), ]
+
+saveRDS(out, '~/Emilie_project/Git/emilie_nlcaribou/output/MoveHMM/out.Rds')
