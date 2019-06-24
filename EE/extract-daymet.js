@@ -3,7 +3,7 @@
 // # June 2019
 
 // ### Image Collection Import
-// NDVI
+// daymet
 var daymet = ee.ImageCollection('NASA/ORNL/DAYMET_V3');
 
 
@@ -32,6 +32,26 @@ var lowJul = 100;
 var highJul = 150;
 
 // ### Filter
-ndvi = daymet
+daymet = daymet
   .filter(ee.Filter.calendarRange(lowYear, highYear, 'year'))
   .filter(ee.Filter.dayOfYear(lowJul, highJul));
+
+// ### Add year
+var addYear = function(img) {
+  return(img.addBands(ee.Image(img.date().get('year')).rename('yr')));
+};
+
+daymet = daymet.map(addYear);
+
+// ### Sample
+var samplePts = function(img) {
+  return img.reduceRegions(points, ee.Reducer.mean())
+            .copyProperties(points);
+};
+
+var reduced = daymet.map(samplePts)
+									.flatten()
+									.filter(ee.Filter.neq('daymet', null));
+
+// ### Export
+Export.table.toDrive(reduced, outputString, 'IRG');
