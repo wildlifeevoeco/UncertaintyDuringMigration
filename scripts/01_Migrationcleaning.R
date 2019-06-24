@@ -13,9 +13,14 @@ migration <- as.data.table(migration)
 
 ##select migration distance above 30km 
 summary(migration)
+uniqueN(migration$Animal_ID) ##118 indiv in total
+
+#subset by indiv that had min 30km "migration" (min distance between first point and other pts)
 mig <- migration[Displace >= 30]
+
 hist(mig$Displace)
 summary(mig)
+uniqueN(mig$Animal_ID) ###111 indiv after removed < 30km
 
 ##tab of dates for all herds
 #summary.all <- mig %>%
@@ -114,8 +119,14 @@ write.csv(avg,'~/Emilie_project/Git/emilie_nlcaribou/output/datesgmigration.csv'
 saveRDS(mig, '~/Emilie_project/Git/emilie_nlcaribou/output/Allmigrationdates.Rds')
 
 ## Subset by Midridge herd
-caribouclean <- mig[Herd == 'MIDRIDGE']
-summary(caribouclean)
-caribouclean$FixDate <- as.character(caribouclean$FixDate, format = "%Y-%m-%d")
+Allmigration<-subset(mig, Herd=="MIDRIDGE")
+levels(Allmigration$Herd)
+Allmigration$Herd <- levels(droplevels(Allmigration$Herd))
+unique(Allmigration$Herd)
 
-saveRDS(caribouclean, '~/Emilie_project/Git/emilie_nlcaribou/output/caribouclean.Rds')
+#num indiv for Midridge 
+uniqueN(Allmigration$Animal_ID) ##34 indiv for 4 years
+Allmigration$FixDate <- as.character(Allmigration$FixDate, format = "%Y-%m-%d")
+
+## Save tab with 34 indiv from Midridge between 2010 and 2013
+saveRDS(Allmigration, '~/Emilie_project/Git/emilie_nlcaribou/output/Allmigration.Rds')
