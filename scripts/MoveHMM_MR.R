@@ -42,6 +42,7 @@ fitHMM1<-fitHMM(MRPrep, nbStates=2, stepPar0=c(20,200,100,100,0.01,0.001),
                 anglePar0=c(pi,0,1,3), verbose=2)
 
 fitHMM1
+saveRDS(fitHMM1, '~/Emilie_project/Git/emilie_nlcaribou/output/fitHMM1.Rds')
 
 ### Wrap up states + residuals ----
 # Decode the most probable state sequence - 1 = "encamped" 2 = "exploratory" (viterbi)
@@ -52,14 +53,14 @@ DecodeAndPseudo <- function(x){
         pseudoRes(x))
 }
 
-ls.fits <- list(fitHMM)
+ls.fits <- list(fitHMM1)
 
 collect <- lapply(ls.fits, FUN = function(fit){
   DecodeAndPseudo(fit)
 })
 
 ##Check results on graphs (steplength, turnangle and example of indiv)
-plot(fitHMM,ask=TRUE,animals=NULL,breaks=20)
+plot(fitHMM1,ask=TRUE,animals=NULL,breaks=20)
 
 locs.w.states <- rbindlist(collect)
 
