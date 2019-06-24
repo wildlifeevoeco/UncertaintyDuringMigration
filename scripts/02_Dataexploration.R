@@ -11,7 +11,7 @@ lapply(libs,require, character.only = TRUE)
 caribouclean <- readRDS("Allmigration.RDS")
 
 ## remove columns 
-caribouclean<-subset(caribouclean, select = -c(1,13:17))
+caribouclean<-subset(caribouclean, select = -c(1,14:17))
 
 ##Add columns with ID,year,Herd
 #caribouclean[,ID := paste (ANIMAL_ID, year, HERD, sep = '_')]
