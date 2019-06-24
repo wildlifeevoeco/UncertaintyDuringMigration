@@ -53,5 +53,10 @@ var reduced = daymet.map(samplePts)
 									.flatten()
 									.filter(ee.Filter.neq('daymet', null));
 
+
+// ### Filter
+// TODO: filter based off jul of point and jul of pic (and year)
+
+
 // ### Export
 Export.table.toDrive(reduced, outputString, 'IRG');
