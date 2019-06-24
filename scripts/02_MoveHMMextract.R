@@ -3,7 +3,7 @@ libs <- c('data.table', 'moveHMM', 'tseries')
 lapply(libs, require, character.only = TRUE)
 
 ### Input raw data ----
-locs <- readRDS('~/Emilie_project/Git/emilie_nlcaribou/output/caribouclean2010.Rds')
+locs <- readRDS('~/Git/emilie_nlcaribou/output/caribouclean.Rds')
 
 y2010 <- (caribouclean[Year == '2010'])
 locs <- y2010
@@ -13,7 +13,7 @@ locs <- y2010
 
 ### Functions ----
 PrepHerd <- function(in.dt){
-  prepData(in.dt[, .(Easting, Northing, Herd, ID = IDYear)],
+  prepData(in.dt[, .(Easting, Northing, ID = Animal_ID, Herd)],
            type = 'UTM', coordNames = c('Easting', 'Northing'))
 }
 
@@ -29,11 +29,9 @@ lap <- PrepHerd(locs[HERD == 'LAPOILE'])
 
 # MIDDLE RIDGE
 mid <- PrepHerd(locs[Herd == 'MIDRIDGE'])
-#Histo steplength
-hist(mid$step)
 head(mid)
-
-# POTHILL
+hist(mid$step)
+c# POTHILL
 pot <- PrepHerd(locs[HERD == 'POTHILL'])     ####not need to run
 
 # TOPSAILS
@@ -68,65 +66,11 @@ lap.params <- list(
   stationary = TRUE,
   fit = TRUE
 )
-
-whichzero<-which(mid$step==0)
-length(whichzero)/nrow(mid)
-
-hist(mid$angle,breaks=seq(-pi, pi,length=15))
-
-##test try again
-stepMean0 <- c(100, 1000)
-stepSD0 <- c(100, 1000)
-stepPar0 <- c(stepMean0, stepSD0)
-angleMean0<-c(pi,0)
-angleCon0<-c(0.5,3)
-anglePar0<-c(angleMean0, angleCon0)
-m<-fitHMM(data= mid,nbStates=2,stepPar0= stepPar0,anglePar0= anglePar0)
-
-#For reproducibility
-set.seed(12345)
-
-#Numner of tries 
-niter <- 25
-
-#Save list of fitted models
-allm <- list()
-
-for(i in 1:niter){
-  #Step Length mean
-  stepMean0 <- runif (2,
-                      min = c(20, 300),
-                      max = c(300, 1000))
-  #Step length sd
-  stepSD0 <- runif(2, 
-                   min = c(100,100),
-                   max = c(100, 1000))
-  #Turning angle
-  angleMean0 <- c(pi, 0)
-  
-  #Turning angle concentration
-  angleCon0 <- runif(2,
-                     min = c(0.5,3),
-                     max = c(3, 5))
-  #Fit model
-  stepPar0 <- c(stepMean0, stepSD0)
-  anglePar0 <-c(angleMean0, angleCon0)
-  allm[[i]]<-fitHMM(data= mid,nbStates=2,stepPar0= stepPar0,anglePar0= anglePar0)
-}
-
-allnllk <- unlist(lapply(allm, function(m) m$mod$minimum))
-allnllk
-
-whichbest<-which.min(allnllk)
-
-mbest <- allm[which.min(allnllk)]
-mbest
-
 mid.params <- list(
   data = mid,
   nbStates = 2, 
-  stepPar0 = c(100, 1000, 100, 1000, 0.01, 0.001),
-  anglePar0 = c(pi, 0, 0.5, 3), 
+  stepPar0 = c(20, 300, 100, 100, 0.01, 0.001),
+  anglePar0 = c(pi, 0, 1, 3), 
   verbose = 2,
   # stationary = TRUE,
   fit = TRUE
@@ -170,13 +114,13 @@ DecodeAndPseudo <- function(x){
 }
 
 ls.fits <- list(top.fit, lap.fit, mid.fit, grey.fit, buch.fit)  
-ls.fits <- list(m)
+ls.fits <- list(mid.fit)
 
 collect <- lapply(ls.fits, FUN = function(fit){
   DecodeAndPseudo(fit)
 })
 
-plot(m,ask=TRUE,animals=NULL,breaks=20)
+plot(mid.fit,ask=TRUE,animals=NULL,breaks=20)
 
 
 # TODO(MB, CH): check error below
