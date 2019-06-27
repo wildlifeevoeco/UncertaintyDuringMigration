@@ -5,13 +5,14 @@ rm(list=ls())
 .libPaths("C:/R") # location of your R packages
 library(dplyr)
 library(data.table)
+library(ggplot2)
 lapply(libs,require, character.only = TRUE)
 
 ### read file ####
-caribouclean <- readRDS("Allmigration.RDS")
+caribouclean<- readRDS("~/Documents/Emilie_project/Git/emilie_nlcaribou/output/AllmigrationMR.RDS")
 
 ## remove columns 
-caribouclean<-subset(caribouclean, select = -c(1,14:17))
+caribouclean<-subset(caribouclean, select = -c(14:17))
 
 ##Add columns with ID,year,Herd
 #caribouclean[,ID := paste (ANIMAL_ID, year, HERD, sep = '_')]
@@ -22,10 +23,10 @@ numloc <- caribouclean %>%
   summarise(total.fixes = n())
 
 #Year  total.fixes
-#2010	  3179
-#2011	  23059
-#2012 	7853
-#2013 	4121
+# 2010	2774
+# 2011	23059
+# 2012	6255
+#	2013	3702
 
 ## Tab summary by indiv (nb pts by year by number of day and distance of migration)
 indiv <- caribouclean %>%              ###some indiv move more than 30km but in 2 days for ex.
@@ -33,9 +34,10 @@ indiv <- caribouclean %>%              ###some indiv move more than 30km but in 
   summarise(fixes = n(),
             numday = uniqueN(FixDate),
             Distancemig = unique(Displace))
+write.csv(indiv, '~/Documents/Emilie_project/Git/emilie_nlcaribou/output/indiv.csv')
 
-library(ggplot2)
-ggplot(caribouclean[Animal_ID == "mr2009a02"],aes(Easting, Northing)) +
+##plot indiv on map
+ggplot(caribouclean[Animal_ID == "mr2009a06"],aes(Easting, Northing)) +
   geom_point(aes(color = Animal_ID)) +
   geom_path(aes(group = Animal_ID), alpha = 0.2) +
   facet_wrap(~Year, scale = "free")
@@ -49,10 +51,10 @@ year <- caribouclean %>%
   summarise(ID = uniqueN(Animal_ID))
 
 #Year   ID
-# 2010	19
+# 2010	11
 # 2011	21
-# 2012	13
-# 2013	12
+# 2012	6
+# 2013	9
 
 ##count the number of elements by columns
 #sapply(caribouclean, function(x) sum(!duplicated(x))) 
@@ -62,4 +64,4 @@ year <- caribouclean %>%
 #caribouclean[, uniqueN (ANIMAL_ID), by =.(HERD)]
 #caribouclean[, uniqueN(year), by =.(ANIMAL_ID)]
 
-saveRDS(caribouclean, '~/Emilie_project/Git/emilie_nlcaribou/output/caribouclean.Rds')
+saveRDS(caribouclean, '~/Documents/Emilie_project/Git/emilie_nlcaribou/output/cariboucleanMR.Rds')
