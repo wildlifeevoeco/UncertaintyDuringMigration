@@ -5,22 +5,29 @@ rm(list=ls())
 .libPaths("C:/R") # location of your R packages
 library(dplyr)
 library(data.table)
-lapply(libs, require, character.only = TRUE)
 
 ##open the csv
-migration <- read.csv("MigrationDataNSD.CSV")
+migration <- read.csv("~/Documents/Emilie_project/Git/emilie_nlcaribou/input/MigrationDataNSD.csv")
 migration <- as.data.table(migration)
 
-##select migration distance above 30km 
+##
 summary(migration)
 uniqueN(migration$Animal_ID) ##118 indiv in total
 
 #subset by indiv that had min 30km "migration" (min distance between first point and other pts)
 mig <- migration[Displace >= 30]
 
+###remove indiv that don't really migrate or not enough
+mig <- mig[IDYear != "mr2009a022012" & IDYear != "mr2009a032013" & IDYear != "mr2009a062012" &
+           IDYear != "mr2009a062013" & IDYear != "mr2009a082012" & IDYear != "mr2009a102012" &
+           IDYear != "mr2009a142010" & IDYear != "mr2009a152010" & IDYear != "mr2009a172010" &
+           IDYear != "mr2009a182010" & IDYear != "mr2009a182012" & IDYear != "mr2009a212012" &
+           IDYear != "mr2009a242010" & IDYear != "mr2009a272010" & IDYear != "mr2009a292010" &
+           IDYear != "mr2009a312010" & IDYear != "mr2009a312012" & IDYear != "mr2011a012013"]
+
 hist(mig$Displace)
 summary(mig)
-uniqueN(mig$Animal_ID) ###111 indiv after removed < 30km
+uniqueN(mig$Animal_ID) ###107 indiv after removed < 30km and false MR migration
 
 ##tab of dates for all herds
 #summary.all <- mig %>%
@@ -49,7 +56,7 @@ avgJDate$meanstart <- round(avgJDate$meanstart)
 avgJDate$meanend <- round(avgJDate$meanend, digits = 1)
 avgJDate$meanduration <- round(avgJDate$meanduration, digits = 1)
 
-write.csv(avgJDate, '~/Emilie_project/Git/emilie_nlcaribou/output/avgJDate.csv')
+write.csv(avgJDate, '~/Documents/Emilie_project/Git/emilie_nlcaribou/output/avgJDate.csv')
 
 ##Convert JDate in Calendar
 avg <- mig %>%
@@ -114,9 +121,9 @@ avg$meanend<- as.Date(date, format= "%Y-%m-%d")
 #meanduration
 avg$meanduration <- round(avg$meanduration, digits = 1)
 
-write.csv(avg,'~/Emilie_project/Git/emilie_nlcaribou/output/datesgmigration.csv')
+write.csv(avg,'~/Documents/Emilie_project/Git/emilie_nlcaribou/output/datesgmigration.csv')
 
-saveRDS(mig, '~/Emilie_project/Git/emilie_nlcaribou/output/Allmigrationdates.Rds')
+saveRDS(mig, '~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Allmigrationdates.Rds')
 
 ## Subset by Midridge herd
 Allmigration<-subset(mig, Herd=="MIDRIDGE")
@@ -125,8 +132,8 @@ Allmigration$Herd <- levels(droplevels(Allmigration$Herd))
 unique(Allmigration$Herd)
 
 #num indiv for Midridge 
-uniqueN(Allmigration$Animal_ID) ##34 indiv for 4 years
+uniqueN(Allmigration$Animal_ID) ##30 indiv for 4 years
 Allmigration$FixDate <- as.character(Allmigration$FixDate, format = "%Y-%m-%d")
 
 ## Save tab with 34 indiv from Midridge between 2010 and 2013
-saveRDS(Allmigration, '~/Emilie_project/Git/emilie_nlcaribou/output/Allmigration.Rds')
+saveRDS(Allmigration, '~/Documents/Emilie_project/Git/emilie_nlcaribou/output/AllmigrationMR.Rds')
