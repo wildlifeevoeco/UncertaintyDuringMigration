@@ -19,47 +19,53 @@ Wetland<-raster("Wetland100.tif")
 
 Forest<-Conifer+Broadleaf+MixedWood
 
-
-####test with only 1 individuals
-dat <- readRDS("~/Emilie_project/Git/emilie_nlcaribou/output/caribouclean.Rds") %>% 
+caribouclean <- readRDS("~/Documents/Emilie_project/Git/emilie_nlcaribou/output/caribouclean.Rds")
+caribouclean <- caribouclean %>% filter(Year=='2011') 
+datem <- caribouclean %>% 
   drop_na() %>%     #####filter !is.na did not work
   select(x = "Easting", y = "Northing",
          t = "Time", id = "Animal_ID") 
 
-dat[, difTime := as.numeric(difftime(ts, shift(ts), unit = 'mins')), by = "id"]
+####test with only 1 individuals  ##only using caribouclean data
+datem <- readRDS("~/Documents/Emilie_project/Git/emilie_nlcaribou/output/caribouclean.Rds") %>% 
+  drop_na() %>%     #####filter !is.na did not work
+  select(x = "Easting", y = "Northing",
+         t = "Time", id = "Animal_ID") 
 
+### other code 
 utm21N <- '+proj=utm +zone=21 ellps=WGS84'
 
-CreateTrack <- function(x.col, y.col, date.col, crs, ID, NumbRandSteps, sl_distr, ta_distr) {
-  #print(ID)
-  #create track from dataset
-  trk <- track(x.col, y.col, date.col, ID, crs) %>% 
-    #function turns locs into steps
-    steps() 
-  #remove any steps that span more than 2hr
-  trk$dt_ <- difftime(trk$t2_, trk$t1_, unit='hours')
-  trk <- subset(trk, trk$dt_ > 1.9 & trk$dt_ < 2.1, drop = T)
-  #generate random steps
-  trk %>%
-    random_steps(n = NumbRandSteps, sl_distr, ta_distr)
-}
+dat_1_em <- datem %>% filter(id=='mr2009a25') 
 
-CTracks <- caribouclean[, CreateTrack(10, x.col = Easting, y.col = Northing, date.col = Time, ID = Animal_ID, crs = utm21N,
-                               sl_distr = "gamma", ta_distr = "vonmises"), 
-                 by = Animal_ID]
-
-
-
-dat_1 <- dat %>% filter(id=='mr2009a02') 
-
+head(dat_1_em)
 #### Make a track with time and locations
 # make datetime column POSIX
-dat_1$t <- as.POSIXct(dat_1$t)
+dat_1_em$t <- as.POSIXct(dat_1_em$t, format="%Y-%m-%d %H:%M:%S", tz='GMT')
+#dat_1_em <- dat_1_em[dat_1_em$t >= "2011-01-01" & dat_1_em$t <= "2011-12-31",]
+
+dat_1_em <- drop_na(dat_1_em)
+
+
 # make track
-dat_1 <- mk_track(dat_1, .x=x, .y=y, .t=t, crs = sp::CRS("+init=epsg:5070"))
+dat_1_em <- mk_track(dat_1_em, .x=x, .y=y, .t=t, crs = sp::CRS("+init=epsg:5070"), order_by_ts=TRUE, check_duplicates = TRUE)
+  
+##Resampling track 
+summarize_sampling_rate(dat_1_em)  ##pb with the results I think
+
+stps <- amt::track_resample(dat_1_em, rate=hours(5), tolerance=minutes(10)) %>%
+  filter_min_n_burst(min_n=3) %>% steps_by_burst() %>%
+  time_of_day(include.crepuscule=FALSE)
+
+all(diff(dat_1_em$x_) >= 0)   ##FALSE
+all(diff(dat_1_em$y_) >= 0)   ##FALSE
+all(diff(dat_1_em$t_) >= 0)   ##TRUE
+?findInterval
 
 
-test2<-dat    
+
+
+#### Test May 2019 
+test2<-dat 
 #####Change formats 
 test2$id<-as.character(test2$id)
 test2$t<- as.POSIXct(test2$t, format = "%Y-%m-%d %H:%M:%OS")       ######After this, 7 NA appears in the column t
