@@ -66,8 +66,8 @@ var samplePts = function(img) {
 };
 
 var reduced = daymet.map(samplePts)
-								  	.flatten()
-							  		.filter(ee.Filter.neq('daymet', null));
+                    .flatten()
+                    .filter(ee.Filter.neq('daymet', null));
 
 // ### Filter
 var matchDay = function(ft) {
@@ -84,7 +84,6 @@ reduced = reduced
   .map(matchDay)
   .filter(ee.Filter.eq('matchDay', 0));
 
-print(reduced.limit(10))
 
 // ### Export
-// Export.table.toDrive(reduced, outputString, 'IRG');
+Export.table.toDrive(reduced, outputString, 'Daymet');
