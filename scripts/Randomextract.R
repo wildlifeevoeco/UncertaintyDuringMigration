@@ -5,6 +5,8 @@ library(raster)
 library(adehabitatHR)
 library(spatstat)
 library(maptools)
+#devtools::install_github('robitalec/toast')
+library(toast)
 
 #### Migration data
 
@@ -152,7 +154,31 @@ saveRDS(DataSortMidR, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Ra
 #####subset data by random and obs points####
 RSFMigrationMR$Randoms <- as.factor(RSFMigrationMR$Randoms)
 Randoms<-subset(RSFMigrationMRfinal, Randoms != "1")
-Observed<-subset (RSFMigrationMRfinal, Randoms == "1")
+Observed<-subset(RSFMigrationMRfinal, Randoms == "1")
+
+
+setDT(Randoms)
+setDT(Observed)
+
+
+build_pt_asset(
+  DT = Randoms,
+  out = 'output/Randoms-emilie-nlcaribou',
+  projection = utm21N,
+  id = 'ANIMAL_ID',
+  coords = c('Easting', 'Northing'),
+  extra = setdiff(colnames(Randoms), c('ANIMAL_ID', 'Easting', 'Northing')))
+
+build_pt_asset(
+  DT = Observed,
+  out = 'output/Observed-emilie-nlcaribou',
+  projection = utm21N,
+  id = 'ANIMAL_ID',
+  coords = c('Easting', 'Northing'),
+  extra = setdiff(colnames(Observed), c('ANIMAL_ID', 'Easting', 'Northing')))
+
+
+
 saveRDS(Randoms, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/RandomPoints/Randoms.RDS")
 saveRDS(Observed, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/RandomPoints/Observed.RDS")
 
