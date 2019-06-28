@@ -1,7 +1,7 @@
 // ### Extract Daymet
 // # Alec Robitaille
 // # June 2019
-
+ 
 // ### Image Collection Import
 // daymet
 var daymet = ee.ImageCollection('NASA/ORNL/DAYMET_V3');
@@ -12,14 +12,14 @@ var daymet = ee.ImageCollection('NASA/ORNL/DAYMET_V3');
 var type = 'observed';
 
 // Import feature collections
-var observed = ee.FeatureCollection('users/emilie/observed');
-var random = ee.FeatureCollection('users/emilie/random');
+var observed = ee.FeatureCollection('users/ededeban/Observed-emilie-nlcaribou');
+// var random = ee.FeatureCollection('users/ededeban/Randoms-emilie-nlcaribou');
 
 
 if(type == 'observed'){
-  var dt = observed;
+  var points = observed;
 } else {
-  var dt = random;
+  var points = random;
 }
 
 var outputString  = type + '-daymet';
@@ -38,10 +38,11 @@ daymet = daymet
 
 // ### Add year
 var addYear = function(img) {
-  return(img.addBands(ee.Image(img.date().get('year')).rename('yr')));
+  return(img.addBands(ee.Image(img.date().get('year')).float().rename('yr')));
 };
 
 daymet = daymet.map(addYear);
+Map.addLayer(daymet)
 
 // ### Sample
 var samplePts = function(img) {
@@ -53,10 +54,9 @@ var reduced = daymet.map(samplePts)
 									.flatten()
 									.filter(ee.Filter.neq('daymet', null));
 
-
 // ### Filter
 // TODO: filter based off jul of point and jul of pic (and year)
-
+print(reduced.limit(10))
 
 // ### Export
-Export.table.toDrive(reduced, outputString, 'IRG');
+// Export.table.toDrive(reduced, outputString, 'IRG');
