@@ -36,13 +36,28 @@ daymet = daymet
   .filter(ee.Filter.calendarRange(lowYear, highYear, 'year'))
   .filter(ee.Filter.dayOfYear(lowJul, highJul));
 
-// ### Add year
-var addYear = function(img) {
-  return(img.addBands(ee.Image(img.date().get('year')).float().rename('yr')));
+// ### Add year and julian day
+var addJulian = function(img) {
+  return(img.addBands(
+    ee.Image(img.date()
+                .getRelative('day', 'year'))
+                .float()
+                .rename('jul')));
 };
 
-daymet = daymet.map(addYear);
-Map.addLayer(daymet)
+var addYear = function(img) {
+  return(img.addBands(
+    ee.Image(img.date()
+                .get('year'))
+                .float()
+                .rename('yr')));
+};
+
+daymet = daymet
+  .map(addJulian)
+  .map(addYear);
+  
+Map.addLayer(daymet);
 
 // ### Sample
 var samplePts = function(img) {
@@ -51,11 +66,24 @@ var samplePts = function(img) {
 };
 
 var reduced = daymet.map(samplePts)
-									.flatten()
-									.filter(ee.Filter.neq('daymet', null));
+								  	.flatten()
+							  		.filter(ee.Filter.neq('daymet', null));
 
 // ### Filter
-// TODO: filter based off jul of point and jul of pic (and year)
+var matchDay = function(ft) {
+  var imgDay = ee.Number(ft.get('jul'));
+  var ptDay = ee.Number(ft.get('JDate'));
+  var diff = imgDay.subtract(ptDay);
+  return ft.set('matchDay', diff);
+};
+
+
+// add the difference day column and 
+//   filter to where the days are the same
+reduced = reduced
+  .map(matchDay)
+  .filter(ee.Filter.eq('matchDay', 0));
+
 print(reduced.limit(10))
 
 // ### Export
