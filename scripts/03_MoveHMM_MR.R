@@ -82,3 +82,4 @@ outMR$ptID[duplicated(outMR$ptID)]
 outMR<-outMR[!duplicated(outMR$ptID), ]
 
 saveRDS(outMR, '~/Documents/Emilie_project/Git/emilie_nlcaribou/output/MoveHMM/outMR.Rds')
+
