@@ -25,11 +25,11 @@ if(type == 'observed'){
 var outputString  = type + '-daymet';
 
 // Year range to extract
-var lowYear = 2007; 
+var lowYear = 2010; 
 var highYear = 2013;
 
-var lowJul = 100;
-var highJul = 150;
+var lowJul = 50;
+var highJul = 120;
 
 // ### Filter
 daymet = daymet
@@ -56,7 +56,7 @@ var addYear = function(img) {
 daymet = daymet
   .map(addJulian)
   .map(addYear);
-  
+
 Map.addLayer(daymet);
 
 // ### Sample
@@ -66,24 +66,30 @@ var samplePts = function(img) {
 };
 
 var reduced = daymet.map(samplePts)
-                    .flatten()
-                    .filter(ee.Filter.neq('daymet', null));
+                    .flatten();
 
 // ### Filter
-var matchDay = function(ft) {
+var matchDate = function(ft) {
   var imgDay = ee.Number(ft.get('jul'));
   var ptDay = ee.Number(ft.get('JDate'));
-  var diff = imgDay.subtract(ptDay);
-  return ft.set('matchDay', diff);
+  var diffDay = imgDay.subtract(ptDay);
+  
+  var imgYr = ee.Number(ft.get('yr'));
+  var ptYr = ee.Number(ft.get('Year'));
+  var diffYr = imgYr.subtract(ptYr);
+  return ft.set({
+    'diffDay': diffDay, 
+    'diffYr': diffYr});
 };
 
 
 // add the difference day column and 
 //   filter to where the days are the same
 reduced = reduced
-  .map(matchDay)
-  .filter(ee.Filter.eq('matchDay', 0));
-
+  .map(matchDate)
+  // .filter(ee.Filter.neq('daymet', null))
+  .filter(ee.Filter.eq('diffDay', 0))
+  .filter(ee.Filter.eq('diffYr', 0));
 
 // ### Export
 Export.table.toDrive(reduced, outputString, 'Daymet');
