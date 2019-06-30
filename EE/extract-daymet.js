@@ -9,17 +9,20 @@ var daymet = ee.ImageCollection('NASA/ORNL/DAYMET_V3');
 
 // ### Variables
 // Set type
-var type = 'observed';
+var type = 'random1';
 
 // Import feature collections
 var observed = ee.FeatureCollection('users/ededeban/Observed-emilie-nlcaribou');
-// var random = ee.FeatureCollection('users/ededeban/Randoms-emilie-nlcaribou');
+var random1 = ee.FeatureCollection('users/ededeban/Randoms1-emilie-nlcaribou');
+var random2 = ee.FeatureCollection('users/ededeban/Randoms2-emilie-nlcaribou');
 
 
 if(type == 'observed'){
   var points = observed;
-} else {
-  var points = random;
+} else if (type == 'random1'){
+  var points = random1;
+} else if (type == 'random2'){
+  var points = random1;
 }
 
 var outputString  = type + '-daymet';
