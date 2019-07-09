@@ -19,20 +19,20 @@ Wetland<-raster("Wetland100.tif")
 
 Forest<-Conifer+Broadleaf+MixedWood
 
+##First test
 caribouclean <- readRDS("~/Documents/Emilie_project/Git/emilie_nlcaribou/output/caribouclean.Rds")
-caribouclean <- caribouclean %>% filter(Year=='2011') 
-datem <- caribouclean %>% 
+cariboucleanMR <- cariboucleanMR %>% filter(Year=='2011') 
+datem <- cariboucleanMR %>% 
   drop_na() %>%     #####filter !is.na did not work
   select(x = "Easting", y = "Northing",
          t = "Time", id = "Animal_ID") 
 
 ####test with only 1 individuals  ##only using caribouclean data
-datem <- readRDS("~/Documents/Emilie_project/Git/emilie_nlcaribou/output/caribouclean.Rds") %>% 
-  drop_na() %>%     #####filter !is.na did not work
-  select(x = "Easting", y = "Northing",
-         t = "Time", id = "Animal_ID") 
+#datem <- readRDS("~/Documents/Emilie_project/Git/emilie_nlcaribou/output/caribouclean.Rds") %>% 
+#  drop_na() %>%     #####filter !is.na did not work
+#  select(x = "Easting", y = "Northing",
+#         t = "Time", id = "Animal_ID") 
 
-### other code 
 utm21N <- '+proj=utm +zone=21 ellps=WGS84'
 
 dat_1_em <- datem %>% filter(id=='mr2009a25') 
@@ -51,15 +51,16 @@ dat_1_em <- mk_track(dat_1_em, .x=x, .y=y, .t=t, crs = sp::CRS("+init=epsg:5070"
   
 ##Resampling track 
 summarize_sampling_rate(dat_1_em)  ##pb with the results I think
+dat_1_em <- dat_1_em[order(dat_1_em$t_),]
 
 stps <- amt::track_resample(dat_1_em, rate=hours(5), tolerance=minutes(10)) %>%
   filter_min_n_burst(min_n=3) %>% steps_by_burst() %>%
   time_of_day(include.crepuscule=FALSE)
 
-all(diff(dat_1_em$x_) >= 0)   ##FALSE
+all(diff(dat_1_em$x_) >= 0)   ##TRUE
 all(diff(dat_1_em$y_) >= 0)   ##FALSE
-all(diff(dat_1_em$t_) >= 0)   ##TRUE
-?findInterval
+all(diff(dat_1_em$t_) >= 0)   ##FALSE
+
 
 
 
