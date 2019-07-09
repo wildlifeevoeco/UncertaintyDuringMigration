@@ -27,7 +27,7 @@ unique(dataDisp$burst.x)
 #par(mfrow=c(2,1))
 
 ###Select indiv 
-i<-"mr2009a062011"
+i<-"mr2009a252010"
 Test1<-subset(dataDisp, burst.x==i)
 Test2<-subset(Test1, Displace>max(Displace)/2)
 min(Test2$JdateTime)
@@ -50,16 +50,21 @@ points(y ~ x, data = pts, pch = 19, col = "blue", cex = 1.5, type = 'p')  ###fir
 points(y ~ x, data = pts2, pch = 19, col = "red", cex = 1.5, type = 'p')  ###last pts migration
 
 ##subset by one indiv/one year 
-i<-"mr2009a252011"
+i<-"mr2009a152010"
 indivPre<-subset(PreMig, burst==i)
 indivMig<-subset(MigData, burst==i)
 indivPost<-subset(PostMig, burst==i)
 ### plot animal mvt with 3 periods (pre/mig/post)
 (plot2 <- ggplot(indivPre, aes(EASTING,NORTHING)) + 
-    geom_point(data = indivPre, color = 'green', size = 1.5, alpha = 0.9) +
-    geom_point(data = indivMig, color = 'blue', size = 1.5, alpha = 0.8) +
-    geom_point(data = indivPost, color = 'grey', size = 1.5, alpha = 0.9)
-)
+    geom_point(data = indivPre, color = 'black', size = 1.5, alpha = 0.9) +
+    geom_point(data = indivMig, color = 'grey', size = 1.5, alpha = 0.8) +
+    geom_point(data = indivPost, color = 'grey', size = 1.5, alpha = 0.9) +
+    theme_classic() + 
+    ggtitle("c- Different phases of movement : Second individual example") + 
+    theme(plot.title = element_text(lineheight=.5, face="bold", size =11.8)))
+
+(panel.grid.minor = element_line(),
+  panel.background = element_blank())
 
 ###Plot spring migration with mvt and encamp behavior
 ggplot(outMR[Animal_ID == "mr2009a25"],aes(Easting, Northing)) +
@@ -74,7 +79,10 @@ test <- outMR
 test$state <- factor(test$state, levels=c("1", "2"), labels=c("Encamped", "Movement"))
 
 ggplot(test[IDYear == "mr2009a252011"],aes(Easting, Northing, fill = state)) +
-  geom_point(aes(color = state))+theme(legend.position=c(.6,0.8))+ theme_light()
+  geom_point(aes(color = state))+theme(legend.position=c(.6,0.8))+
+  theme_classic() + 
+  ggtitle("d- MoveHMM states example") + 
+  theme(plot.title = element_text(lineheight=.5, face="bold", size =11.8))
 
 #######MCP Analysis
 ### read file ####
