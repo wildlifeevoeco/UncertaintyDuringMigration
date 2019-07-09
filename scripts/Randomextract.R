@@ -140,7 +140,8 @@ saveRDS(DataSortMidR, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Ra
 DataSortMidR <- RSFMigrationMR
 rm(list=ls())
 
-###### Eliminate data that fall in water or that have NAs
+###### Eliminate data that fall in water or that have NAs#######
+################################################################
 
 ## Read in water raster
 Water<-raster("~/Documents/Emilie_project/Git/Landcover/Water.tif")
@@ -149,28 +150,31 @@ DataSortMidR$IsWater<-extract(Water,data.frame(DataSortMidR$Easting,DataSortMidR
 ## Exclude points that fall in water
 DataSortMidR<-subset(DataSortMidR,IsWater==0)
 
+#######Save file with obs/randoms pts##########
 summary(DataSortMidR)
 names(DataSortMidR)[24]<-"Randoms"
 saveRDS(DataSortMidR, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/RandomPoints/RSFMigrationMRfinal.RDS")
 
-#####subset data by random and obs points####
+#####subset data by random and obs points separately ########3
 RSFMigrationMR$Randoms <- as.factor(RSFMigrationMR$Randoms)
 Randoms<-subset(RSFMigrationMRfinal, Randoms != "1")
 Observed<-subset(RSFMigrationMRfinal, Randoms == "1")
 saveRDS(Randoms, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/RandomPoints/Randoms.RDS")
 saveRDS(Observed, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/RandomPoints/Observed.RDS")
 
-
+####### Finally number of pts in the study with 30 individuals #####
 numloc <- Observed %>%
   group_by(Year)%>%
   summarise(total.fixes = n())
 
+############ PREPARE DATA FOR EARTH ENGINE EXTRACTION########
+#############################################################
 setDT(Randoms)
 setDT(Observed)
 
 nrdm <- nrow(Randoms)
-Random1 <- Randoms[1:250000]
-Random2 <- Randoms[250001: nrdm]
+
+####Subset randoms data in 4 files
 Randoms$FixDate <- as.Date( as.character(Randoms$FixDate), "%Y-%m-%d")
 Random1 <- subset(Randoms, Year == '2010') 
 Random2 <- subset(Randoms, Year == '2011' & FixDate >= '2011-02-12' & FixDate <= '2011-03-31')
@@ -182,6 +186,7 @@ Random2 <- as.data.table(Random2)
 Random3 <- as.data.table(Random3)
 Random4 <- as.data.table(Random4)
 
+#################Prepare folders with data.table/shp ######
 build_pt_asset(
   DT = Random1,
   out = 'output/Random1-emilie-nlcaribou',
@@ -222,16 +227,7 @@ build_pt_asset(
   coords = c('Easting', 'Northing'),
   extra = setdiff(colnames(Observed), c('Animal_ID', 'Easting', 'Northing')))
 
-######Solve problem with disparition of 'angle' and 'angleRes' columns######
-###create new dataframe with new column from Observed data with : time and ID
-Obsall <- Observed[,TimeIDYear := paste(Time, IDYear, sep = '_')]
-Obsall = subset(Obsall, select = c(9:10,21,23,27))
-##create new column from Daymet with time and ID
-observed_daymet_2<-as.data.table(observed_daymet_2)
-obsDaymet <- observed_daymet_2[,TimeIDYear := paste(Time, IDYear, sep = '_')]
-##Merge new dataset with obsDaymet by time/ID column
-mergeObs <- merge(Obsall, obsDaymet, all.x = TRUE, by = colnames("TimeIDYear"))
-
+#########AFTER DOWNLOADED DATA FROM EARTH ENGINE###########
 ###After EE
 obsDaymet <- fread('output/Observed-emilie-nlcaribou/observed-daymet.csv')
 rdm1Daymet <- fread('~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Random1-emilie-nlcaribou/random1-daymet.csv')
@@ -242,17 +238,30 @@ rdm4Daymet <- fread('~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Rand
 rdm3Daymet = subset(rdm3Daymet, select = -c(20:21))
 rdmDaymet <- rbindlist(list(rdm1Daymet, rdm2Daymet, rdm3Daymet, rdm4Daymet))
 
+
+######Solve problem with disparition of 'angle' and 'angleRes' columns######
+
+###create new dataframe with new column from Observed data with : time and ID
+Obsall <- Observed[,TimeIDYear := paste(Time, IDYear, sep = '_')]
+Obsall = subset(Obsall, select = c(9:10,21,23,27))
+##create new column from Daymet with time and ID
+observed_daymet_2<-as.data.table(observed_daymet_2)
+obsDaymet <- observed_daymet_2[,TimeIDYear := paste(Time, IDYear, sep = '_')]
+##Merge new dataset with obsDaymet by time/ID column
+mergeObs <- merge(Obsall, obsDaymet, all.x = TRUE, by = colnames("TimeIDYear"))
+
 #Observed <- readRDS('the original Observed file')
 #Randoms <- readRDS('the original Randoms file')
 
+###subset Rdm file by the columns that we need
 names(Randoms)[25]<-"ptID_1"
 Rdm = subset(rdmDaymet, select = c(23:26, 30:35))
-##Merge new dataset with obsDaymet by time/ID column
+##Merge new dataset with RdmDaymet by time/ID column
 mergeRdm <- merge(Rdm, Randoms, all.x = TRUE, by = colnames("ptID_1"))
 
 
 ####When I will extract covariates
-### Next steps are to remove points where IRG or other variables are NA
+### Next steps are to remove points where variables are NA
 sum(is.na(mergeRdm$swe))
 sum(is.na(mergeRdm$tmax))
 sum(is.na(mergeRdm$tmin))     ### O NAs all covariates
@@ -288,6 +297,7 @@ mergeRdm$FixTime <-as.ITime(mergeRdm$FixTime, format="%H:%M:%S")
 mergeRdm$Time <- as.POSIXct(mergeRdm$Time,format="%Y-%m-%d %H:%M:%S")
 mergeObs$Time <- as.POSIXct(mergeObs$Time,format="%Y-%m-%d %H:%M:%S")
 
+####Prepare data and save for extraction NDVI/weather 
 allweather <- rbind(mergeObs,mergeRdm)
 saveRDS(allweather, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/allweather.Rds")
 
