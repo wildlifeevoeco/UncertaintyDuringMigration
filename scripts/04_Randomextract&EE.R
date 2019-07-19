@@ -307,10 +307,25 @@ saveRDS(allweather, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/allw
 #Migration2<-Migration2[!is.na(Migration2$PeakIRG),]
 #Migration2<-Migration2[!is.na(Migration2$SnowOffDate),]
 #setDT(Migration2)
-#NewD<-data.table(Migration2)
+NewD<-data.table(allNDVI)
 
 #### Find points/strata where only random points exist (mean == 0)
-#NewD[, StrMean := mean(Pres),by = .(strata)]
-#summary(NewD)
-#nrow(NewD)
+
+NewD$Randoms<-ifelse(NewD$Randoms=="1",1,0)
+head(NewD)
+summary(NewD)
+NewD[, StrMean := mean(as.numeric(Randoms)),by = .(PtID)]
+summary(NewD)
+nrow(NewD)
+
+NewD2<-subset(NewD,StrMean>0)
+
+#RSFdata<-NewD2
+#RSFdataR<-RSFdata[, .SD[1:11], by = PtID]
+#RSFdataR[, .N, by = PtID]
+#summary(RSFdataR)
+####savenewD2
+
+saveRDS(allNDVI, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/allNDVI.Rds")
+
 
