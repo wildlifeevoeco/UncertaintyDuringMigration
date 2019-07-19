@@ -43,7 +43,7 @@ mid.fit<-fitHMM(MRPrep, nbStates=2, stepPar0=c(20,200,100,100,0.01,0.001),
 
 mid.fit
 saveRDS(mid.fit, '~/Documents/Emilie_project/Git/emilie_nlcaribou/output/moveHMM/mid.fit.RDS')
-
+fitHMM1
 ### Wrap up states + residuals ----
 # Decode the most probable state sequence - 1 = "encamped" 2 = "exploratory" (viterbi)
 #  + pseudo residuals
