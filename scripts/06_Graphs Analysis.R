@@ -1,6 +1,5 @@
 ###First analysis 
 plot(obsDaymet$swe, y = NULL)
-?plot
 library(ggplot2)
 par(mar=c(4,4,1,1))
 ggplot(obsDaymet, aes(swe)) +
@@ -19,7 +18,7 @@ ggplot(encamp, aes(step)) +
   geom_histogram() 
 
 Obs$step <- subset(Obs, step <= 10)
-ggplot(Obs,aes(step), fill = state)) +
+ggplot(Obs,aes(step), fill = state) +
   geom_histogram(aes(color = state))
 
 mean(obsDaymet$tmin)
@@ -106,6 +105,300 @@ ttest2 <- subset (ndvitest, state == 2)
 shapiro.test(ttest1$NDVI)
 shapiro.test(ttest2$NDVI)
 t.test(ttest1$NDVI, ttest2$NDVI)
+###############################
+library(ggplot2)
+####Plot variables/time
+allNDVIobs$Year<-as.factor(allNDVIobs$Year)
+all2010<-subset(allNDVIobs, Year == "2010")
+all2011<-subset(allNDVIobs, Year == "2011")
+all2012<-subset(allNDVIobs, Year == "2012")
+all2013<-subset(allNDVIobs, Year == "2013")
+####Temperature
+tmax1<- ggplot(all2010, aes(x=JDate, y=tmax, colour=as.factor(state), group = as.factor(state))) +
+geom_smooth(span = 0.3, method = 'gam', formula = y ~ s(x, bs = "cs"))+
+  theme_bw() +
+  labs(title = "Year 2010",color = "State")+
+  theme(legend.position = c(0.7, 0.2),
+    axis.title.y = element_text(size = 12, color = 'black'),
+    axis.text = element_text(size = 10, color = 'black'),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      colour = 'black',
+      fill = NA,
+      size = 1))
 
-a1 <- lme4::lmer(NDVI ~ state + Year + (1|Animal_ID), data = allNDVI[Randoms == 1]) 
-PQL <- nlme::glmmPQL(NDVI ~ state + Year + (1|Animal_ID), data = allNDVI[Randoms == 1], verbose = FALSE)
+tmax2<- ggplot(all2011, aes(x=JDate, y=tmax, colour=as.factor(state), group = as.factor(state))) +
+  geom_smooth(span = 0.3, method = 'gam', formula = y ~ s(x, bs = "cs"))+
+  theme_bw() +
+  labs(title = "Year 2011", color = "State")+
+  theme(legend.position = c(0.8, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+
+tmax3<- ggplot(all2012, aes(x=JDate, y=tmax, colour=as.factor(state), group = as.factor(state))) +
+  geom_smooth(span = 0.3, method = 'gam', formula = y ~ s(x, bs = "cs"))+
+  theme_bw() +
+  labs(title = "Year 2012",color = "State")+
+  theme(legend.position = c(0.7, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+
+tmax4<- ggplot(all2013, aes(x=JDate, y=tmax, colour=as.factor(state), group = as.factor(state))) +
+  geom_smooth(span = 0.3, method = 'gam', formula = y ~ s(x, bs = "cs"))+
+  theme_bw() +
+  labs(title = "Year 2013", color = "State")+
+  theme(legend.position = c(0.9, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+multiplot(tmax1,tmax2,tmax3,tmax4, cols = 2) 
+####density temperature pts by state,year
+
+density1<- ggplot(all2010, aes(x=tmax, colour=as.factor(state), group = as.factor(state))) +
+  geom_density()+
+  theme_bw() +
+  labs(title = "Year 2010", color = "State")+
+  theme(legend.position = c(0.9, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+density2<- ggplot(all2011, aes(x=tmax, colour=as.factor(state), group = as.factor(state))) +
+  geom_density()+
+  theme_bw() +
+  labs(title = "Year 2011", color = "State")+
+  theme(legend.position = c(0.9, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+density3<- ggplot(all2012, aes(x=tmax, colour=as.factor(state), group = as.factor(state))) +
+  geom_density()+
+  theme_bw() +
+  labs(title = "Year 2012", color = "State")+
+  theme(legend.position = c(0.9, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+density4<- ggplot(all2013, aes(x=tmax, colour=as.factor(state), group = as.factor(state))) +
+  geom_density()+
+  theme_bw() +
+  labs(title = "Year 2013", color = "State")+
+  theme(legend.position = c(0.9, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+
+multiplot(density1,density2,density3,density4, cols = 2) 
+   
+###swe
+swe1<- ggplot(all2010, aes(x=swe, colour=as.factor(state), group = as.factor(state))) +
+  geom_density()+
+  theme_bw() +
+  labs(title = "Year 2010", color = "State")+
+  theme(legend.position = c(0.9, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+
+swe2<- ggplot(all2011, aes(x=swe, colour=as.factor(state), group = as.factor(state))) +
+  geom_density()+
+  theme_bw() +
+  labs(title = "Year 2011", color = "State")+
+  theme(legend.position = c(0.9, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+
+swe3<- ggplot(all2012, aes(x=swe, colour=as.factor(state), group = as.factor(state))) +
+  geom_density()+
+  theme_bw() +
+  labs(title = "Year 2012", color = "State")+
+  theme(legend.position = c(0.9, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+swe4<- ggplot(all2013, aes(x=swe, colour=as.factor(state), group = as.factor(state))) +
+  geom_density()+
+  theme_bw() +
+  labs(title = "Year 2013", color = "State")+
+  theme(legend.position = c(0.9, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+multiplot(swe1,swe2,swe3,swe4, cols = 2) 
+
+swe1<-ggplot(all2010, aes(x=JDate, y=swe, colour=as.factor(state), group = as.factor(state))) +
+  geom_smooth(span = 0.3, method = 'gam', formula = y ~ s(x, bs = "cs"))+
+  theme_bw() +
+  labs(color = "State")+
+  theme(legend.position = c(0.7, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+
+p2 <- ggplot() + geom_smooth(aes(y = swe, x = JDate, fill = state), data = all2010)
+p2
+
+swe2<-ggplot() +
+  geom_smooth(aes(y=swe, x= JDate, fill = state), data = all2010, stat="identity",alpha = .5)+
+  theme_bw() +
+  labs(color = "State")+
+  theme(legend.position = c(0.7, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+
+
+###prcp
+prcp1<- ggplot(all2011, aes(x=JDate, y=prcp, colour=as.factor(state), group = as.factor(state))) +
+  geom_smooth()+
+  theme_bw() +
+  labs(title = "Year 2010", color = "State")+
+  theme(legend.position = c(0.9, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+
+coord_cartesian(ylim = c(0,25))
+####
+dftmin <- summarySEwithin(allNDVIobs, measurevar = "tmin", idvar = "Animal_ID",
+                        withinvars = "state", "Year", na.rm = FALSE, conf.interval = .95)
+plotmin<-ggplot(dftmin, aes(x=Year, y=tmin, colour=state, group = state)) +
+  geom_line() +
+  geom_point(shape=20, size=3, fill="white") +
+  ylim(-5,-2)+
+  theme_bw()
+
+###calculate mean tmax by states 
+library(data.table)
+library(Rmisc)
+meanyear2011<-subset(allNDVIobs, Year == 2011)
+allNDVIobs$Year<-as.factor(allNDVIobs$Year)
+dfwc <- summarySEwithin(allNDVIobs, measurevar = "tmax", idvar = "Animal_ID",
+                            withinvars = "state", "Year", na.rm = FALSE, conf.interval = .95)
+
+p1<-ggplot(dfwc, aes(x=Year, y=tmax, colour=state, group = state)) +
+  geom_line() +
+  geom_errorbar(width=0.2, aes(ymin=tmax-sd, ymax=tmax+sd)) +
+  geom_point(shape=20, size=3, fill="white") +
+  theme_bw()
+ylim(0,8)+
+meanyear2012<-subset(allNDVIobs, Year == 2012)
+dfwc2012 <- summarySEwithin(meanyear2012, measurevar = "tmax", idvar = "Animal_ID",
+                            withinvars = "state", na.rm = FALSE, conf.interval = .95)
+
+p2<-ggplot(dfwc2012, aes(x=state, y=tmax)) +
+  geom_line(aes(group=1)) +
+  geom_errorbar(width=0.2, aes(ymin=tmax-ci, ymax=tmax+ci)) +
+  geom_point(shape=20, size=3, fill="white") +
+  ylim(1,7.5)+
+  theme_bw()
+
+meanyear2012<-subset(allNDVIobs, Year == 2012)
+dfwc2012 <- summarySEwithin(meanyear2012, measurevar = "tmax", idvar = "Animal_ID",
+                            withinvars = "state", na.rm = FALSE, conf.interval = .95)
+
+p2<-ggplot(dfwc2012, aes(x=state, y=tmax)) +
+  geom_line(aes(group=1)) +
+  geom_errorbar(width=0.2, aes(ymin=tmax-ci, ymax=tmax+ci)) +
+  geom_point(shape=20, size=3, fill="white") +
+  ylim(1,7.5)+
+  theme_bw()
+
+meanyear2013<-subset(allNDVIobs, Year == 2013)
+dfwc2013 <- summarySEwithin(meanyear2013, measurevar = "tmax", idvar = "Animal_ID",
+                            withinvars = "state", na.rm = FALSE, conf.interval = .95)
+
+p3<-ggplot(dfwc2013, aes(x=state, y=tmax)) +
+  geom_line(aes(group=1)) +
+  geom_errorbar(width=0.2, aes(ymin=tmax-ci, ymax=tmax+ci)) +
+  geom_point(shape=20, size=3, fill="white") +
+  ylim(1,7.5)+
+  theme_bw()
+
+meanyear2010<-subset(allNDVIobs, Year == 2010)
+dfwc2010 <- summarySEwithin(meanyear2010, measurevar = "tmax", idvar = "Animal_ID",
+                            withinvars = "state", na.rm = FALSE, conf.interval = .95)
+
+p4<-ggplot(dfwc2010, aes(x=state, y=tmax)) +
+  geom_line(aes(group=1)) +
+  geom_errorbar(width=0.2, aes(ymin=tmax-ci, ymax=tmax+ci)) +
+  geom_point(shape=20, size=3, fill="white") +
+  ylim(1,7.5)+
+  theme_bw()
+multiplot(p2,p3,p4, cols = 2)
+
+
+
