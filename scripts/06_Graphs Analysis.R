@@ -1,12 +1,104 @@
 ###First analysis 
-plot(obsDaymet$swe, y = NULL)
 library(ggplot2)
-par(mar=c(4,4,1,1))
-ggplot(obsDaymet, aes(swe)) +
-  geom_histogram(binwidth = 5) 
+library(dplyr)
 
-encamp <- subset(Observed, state == '1')
-mov <- subset (Observed, state == '2')
+allNDVIobs_stop<- subset(allNDVIobs, HMM == '1')
+allNDVIobs_mvt<- subset(allNDVIobs, HMM == '0')
+
+hist(allNDVIobs_mvt$prcp) ##not normal
+hist(allNDVIobs_mvt$tmax) ##normal
+hist(allNDVIobs_mvt$swe) ###not normal
+hist(allNDVIobs_mvt$NDVI) ###not normal
+hist(allNDVIobs_stop$prcp) ###not normal
+hist(allNDVIobs_stop$tmax) ###normal
+hist(allNDVIobs_stop$swe)  ##normal
+hist(allNDVIobs_stop$NDVI) ##not normal
+
+allNDVIobs$Year<-as.factor(allNDVIobs$Year)
+allNDVIobs$state<-as.factor(allNDVIobs$state)
+
+###summary temp data
+temp<-group_by(allNDVIobs_stop, Year) %>%
+  summarise(
+    mean = mean(tmax),
+    sd = sd(tmax)
+  )
+#####Temperature plot across years
+ggplot(allNDVIobs, aes(x=Year, y=tmax, fill = state)) + 
+  geom_boxplot(notch = TRUE,outlier.alpha = 0.1)+
+  scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9"))+
+  theme_bw() +
+  labs(title = "Evolution of temperature values")+
+  theme(axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+####Bartlett for temperature
+bartlett.test(tmax ~ state, data = allNDVIobs) ###variance temp between states
+bartlett.test(tmax ~ Year, data = allNDVIobs) ##variance temp between years
+var.test(allNDVIobs_mvt$tmax, allNDVIobs_stop$tmax)
+kruskal.test(tmax ~ Year, data = allNDVIobs) ###test for non param data
+aov(Mileage~Brands)
+
+####plot swe across years
+ggplot(allNDVIobs, aes(x=Year, y=swe, fill = state)) + 
+  geom_boxplot()
+
+####Bartlett for swe
+bartlett.test(swe ~ state, data = allNDVIobs) ###variance swe between states
+bartlett.test(swe ~ Year, data = allNDVIobs) ##variance swe between year
+
+
+####Bartlett for prcp
+bartlett.test(prcp ~ state, data = allNDVIobs) ###variance prcp between states
+bartlett.test(prcp ~ Year, data = allNDVIobs) ##variance prcp between years
+
+###plot prcp across years
+ggplot(allNDVIobs, aes(x=Year, y=prcp, fill = state)) + 
+  geom_boxplot(notch = FALSE,outlier.alpha = 0.1)+
+  scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9"))+
+  theme_bw() +
+  labs(title = "Evolution of precipitation values")+
+  theme(axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+
+
+####Bartlett for NDVI
+bartlett.test(NDVI ~ state, data = allNDVIobs) ###variance NDVI between states
+bartlett.test(NDVI ~ Year, data = allNDVIobs) ##variance NDVI between years
+
+wilcox.test(NDVI ~ state, data = allNDVIobs)
+
+ggplot(allNDVIobs, aes(x=Year, y=NDVI, fill = state)) + 
+  geom_boxplot(notch = TRUE,outlier.alpha = 0.1)+
+  scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9"))+
+  theme_bw() +
+  labs(title = "Evolution of NDVI values")+
+  theme(axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+
+ggplot(aes(state,tmax),data=allNDVIobs)+
+geom_smooth(span = 0.3, method = 'gam', formula = y ~ s(x, bs = "cs"))
+
+t.test(allNDVIobs_mvt$tmax,allNDVIobs_stop$tmax)
+boxplot(allNDVIobs_mvt$tmax,allNDVIobs_stop$tmax)
+shapiro.test(allNDVIobs_mvt$prcp)
 mean(encamp$angle, na.rm = TRUE)
 mean(mov$angle, na.rm = TRUE)
 
@@ -17,6 +109,12 @@ Obs$step <- conv_unit(Obs$step, "m", "km")
 ggplot(encamp, aes(step)) +
   geom_histogram() 
 
+plot(allNDVIobs_stop$state, allNDVIobs_stop$state, pch = 16, xlab = "WEIGHT (g)", ylab = "VS")
+lines(xweight, yweight)
+
+ggplot(allNDVIobs, aes(tmax, state))+
+  geom_smooth(method = lm)
+              
 Obs$step <- subset(Obs, step <= 10)
 ggplot(Obs,aes(step), fill = state) +
   geom_histogram(aes(color = state))
@@ -341,7 +439,7 @@ plotmin<-ggplot(dftmin, aes(x=Year, y=tmin, colour=state, group = state)) +
   ylim(-5,-2)+
   theme_bw()
 
-###calculate mean tmax by states 
+###calculate se tmax by states 
 library(data.table)
 library(Rmisc)
 meanyear2011<-subset(allNDVIobs, Year == 2011)
@@ -400,5 +498,5 @@ p4<-ggplot(dfwc2010, aes(x=state, y=tmax)) +
   theme_bw()
 multiplot(p2,p3,p4, cols = 2)
 
-
+gglot(allNDVIobs, aes())
 
