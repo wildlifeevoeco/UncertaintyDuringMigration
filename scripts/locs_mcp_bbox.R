@@ -6,15 +6,19 @@ pkgs <- c('data.table', 'sp', 'sf', 'adehabitatHR')
 p <- lapply(pkgs, library, character.only = TRUE)
 
 ### Data ----
-locs <- readRDS('output/caribouclean.Rds')
+#locs <- readRDS('output/caribouclean.Rds')
+
 utm21N <- '+proj=utm +zone=21 ellps=WGS84'
 
+####create column 
+allNDVI$new<-1
+locs<-allNDVI
 ### Processing ----
 # Convert to a SpatialPointsDataFrame
 spdf <- SpatialPointsDataFrame(
-  coords = locs[, .(EASTING, NORTHING)],
+  coords = locs[, .(Easting, Northing)],
   proj4string = CRS(utm21N),
-  data = locs[, .(ANIMAL_ID)]
+  data = locs[, .(new)]
 )
 
 # Generate MCP
