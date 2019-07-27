@@ -5,6 +5,7 @@
 library(dplyr)
 library(ggplot2)
 library(lme4)
+library(MuMIn)
 
 ## see format of variables
 glimpse(allNDVI)
@@ -58,8 +59,46 @@ ggplot(all2011,aes(JDate,tmax))+stat_summary(fun.data=mean_cl_normal) +
   geom_smooth(method='lm',formula=y~x)
 
 
+
+plot(allNDVIobs$tmax, allNDVIobs$HMM)
+g=glm(HMM~tmaxSc*ForestSc, family = "binomial", data = allNDVIobs)
+curve(predict(g,data.frame(tmaxSc=x),type="resp"),add=TRUE)
+
+interplot(m=g, var1 = "ForestSc", var2 = "tmaxSc")+
+  theme(axis.text.x  = element_text(angle=90))
+allNDVIobs
+ggplot(allNDVIobs, aes(tmax, HMM))+
+  stat_smooth(method = 'glm', family = binomial, formula = y~x, alpha = 0.2, size = 2) +
+  xlab('Temperature') +
+  ylab('Allocare occurrence')
+
+library(popbio)
+logi.hist.plot(allNDVIobs$tmax,allNDVIobs$HMM,boxp=FALSE,type="hist",col="gray")
+logi.hist.plot(allNDVIobs$prcp,allNDVIobs$HMM,boxp=FALSE,type="hist",col="gray")
+logi.hist.plot(allNDVIobs$swe,allNDVIobs$HMM,boxp=FALSE,type="hist",col="gray")
+logi.hist.plot(allNDVIobs$NDVI,allNDVIobs$HMM,boxp=FALSE,type="hist",col="gray")
+
 ##############MOVEHMM MODEL ANALYSIS##################
 #####################################################
+
+###################  NEGATIVE VALUES= Less likely to be encamped = more likely to be 0
+allNDVIobs<-subset(allNDVI, Randoms == 1) ##subset
+
+allNDVIobs$HMM <- ifelse(allNDVIobs$state == 2,0,1)  #### 0 == movement and 1 == encamping !!!!!!!!!!!
+
+##to not re-write always scale
+allNDVIobs$prcpSc<-scale(allNDVIobs$prcp)
+allNDVIobs$tmaxSc<-scale(allNDVIobs$tmax)
+allNDVIobs$prcpSc<-scale(allNDVIobs$prcp)
+allNDVIobs$sweSc<-scale(allNDVIobs$swe)
+allNDVIobs$ForestSc<-scale(allNDVIobs$Forest)
+allNDVIobs$LichenSc<-scale(allNDVIobs$Lichen)
+allNDVIobs$WetlandSc<-scale(allNDVIobs$Wetland)
+allNDVIobs$RockySc<-scale(allNDVIobs$Rocky)
+allNDVIobs$WaterSc<-scale(allNDVIobs$Water)
+allNDVIobs$NDVISc<-scale(allNDVIobs$NDVI)
+
+allNDVIobs <- subset(allNDVIobs, select = -c(2:5,7, 11:13))
 
 ###################  NEGATIVE VALUES= Less likely to be encamped = more likely to be 0
 allNDVIobs<-subset(allNDVI, Randoms == 1) ##subset
@@ -128,8 +167,8 @@ HMMall <- glmer (HMM ~ scale(NDVI) + scale(prcp) + scale(swe) + scale(tmax) + sc
 summary(HMMall)
 
 HMMall2 <- glmer (HMM ~ scale(NDVI) + scale(prcp) + scale(swe) + scale(tmax) + scale(Lichen) + scale(Wetland)
-                 + scale(Forest) + scale(Rocky) + scale(Water) + scale(prcp)*scale(swe) + (scale(Lichen)* (scale(tmax) + scale(swe) + scale(prcp)))
-                 + (scale(Forest)*(scale(prcp)+scale(tmax)+scale(swe))) + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
+                  + scale(Forest) + scale(Rocky) + scale(Water) + scale(prcp)*scale(swe) + (scale(Lichen)* (scale(tmax) + scale(swe) + scale(prcp)))
+                  + (scale(Forest)*(scale(prcp)+scale(tmax)+scale(swe))) + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
 summary(HMMall2)
 ###Weather and NDVI 
 HMMWeather_NDVI <- glmer (HMM ~ scale(NDVI) + scale(prcp) + scale(tmax) + scale(swe) + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
@@ -142,10 +181,10 @@ aicMin<-min(aics$AIC)
 aics$deltaaic<-aics$AIC-aicMin
 aics
 
-r.squaredGLMM(HMMall)
+r.squaredGLMM(HMMall2)
 ###Calculate interval of confidence
-carsprfixef<-fixef(HMMall)##extract betas
-carsprSEs<-c(sqrt(diag(vcov(HMMall)))) ## Extract SEs
+carsprfixef<-fixef(HMMall2)##extract betas
+carsprSEs<-c(sqrt(diag(vcov(HMMall2)))) ## Extract SEs
 ## Make lower and upper 95% CIs
 carsprLCI<-carsprfixef-(carsprSEs*1.96)
 carsprUCI<-carsprfixef+(carsprSEs*1.96)
@@ -170,9 +209,46 @@ ggplot(allNDVIobs,aes(x=tmax,y=HMM)) +
   geom_line(data=carsprCI) +
   geom_ribbon(data=carsprCI,aes(ymin=LCI,ymax=UCI),alpha=0.2)
 
-plot_model(HMMall,sort.est=TRUE, transform = NULL)
-plot_model(HMMall, type = "std")
-sjp.glmer(HMMall, type = "re")
+plot_model(HMMall2,sort.est=TRUE, transform = NULL)
+plot_model(HMMall2, type = "std", grid = FALSE, sort.est = TRUE, show.values = TRUE, value.offset = .3)
+plot_model(HMMall2, type = "std", grid = FALSE, sort.est = TRUE)
+plot_model(HMMall2,type = "re")
+plot_model(HMMall2,type = "slope")
+plot_model(RSFWeather_stop2, type = "re")
+plot_model(HMMall2,type = "resid")
+plot_model(HMMall2,type = "diag")
+ggpredict(HMMall2, "ForestSc",ci.lvl = 0.95)
+
+get_model_data(HMMall2, type ="diag")
+dat <- ggpredict(HMMall2, terms = c("ForestSc","prcpSc"))
+plot(dat)
+
+ggplot(beta_coefficient, aes(Variables, b)) +
+  geom_point(position = position_dodge(width = 0.5), size = 3) +
+  geom_errorbar(aes(ymin=Lower, ymax=Upper), 
+                colour="black", width = 0,
+                position = position_dodge(width = 0.5)) +
+  geom_hline(yintercept = 0, linetype = 'dotted') +
+  ylim(-2,2) +
+  xlab("") +
+  ylab("Beta coefficient (+/- 95% CI)") +
+  coord_flip()+
+  theme(legend.position = c(0.85,0.85),
+        legend.title = element_blank(),
+        legend.background = element_rect(color = "black"),
+        legend.key = element_blank(),
+        legend.text = element_text(size = 12),
+        axis.title = element_text(size=18),
+        axis.text = element_text(size=12),
+        strip.text  = element_text(size = 16),
+        strip.background = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA, size=1))
+
+
+
+  
 
 library(Rmisc)
 library(jtools)
@@ -182,13 +258,9 @@ plot_summs(HMMall)
 plot(allEffects(HMMall))
 r.squaredGLMM(HMMall)
 mod3.prob <- update(HMMall, family = binomial(link = "probit"))
-##other way select AIC
-# Model selection
-model.1.set <- dredge(model.1, rank = "AICc")
 
-# Get models with <10 delta AICc
-top.models.1 <- get.models(model.1.set,subset = delta<10)
-
+effect_plot(HMMall, pred = Lichen, interval = FALSE, plot.points = FALSE)
+?effect_plot
 
 
 library(car)
@@ -215,26 +287,12 @@ stargazer(DT, type = "html",
 
 stargazer(allNDVIobs, type = "text", title="Descriptive statistics", digits=1, out="allNDVIobs.txt", flip=TRUE)
 
-write.table(tab, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/tab.txt", sep="\t")
 
-Inter.HandPick <- effect('scale(swe) * scale(prcp)', HMMSnow,
-                         xlevels = list (swe = c(-15,
-                                                 0,15),
-                                         prcp = c(-1.1, 0, 1.1),
-                                         se = TRUE, confidence.level=
-                                           .95, typical=mean))
-Inter.HandPick<- as.data.frame(Inter.HandPick)
-head(Inter.HandPick)
 ###
 
 dotplot(ranef(HMMWeatherForest,condVar=TRUE))
-sjp.glmer(HMMWeatherForest, type = "fe.cor")
+sjp.glmer(HMMall, type = "fe.cor")
 
-plot(HMMWeatherForest, type = c("p", "smooth") , id = 0.05)
-
-plot(HMMWeatherForest,  factor(Animal_ID) ~ resid(., type='pearson'),  abline=c(v=0), lty=2)
-
-plot(HMMWeatherForest, type = 'response', ylab = 'scaled size diff', xlab = 'probability of copulation')
 
 plot(state  ~ tmax, 
      data = allNDVIobs,
