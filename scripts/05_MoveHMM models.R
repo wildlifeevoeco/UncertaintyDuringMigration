@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #############################################
 ############ MoveHMM model ##################
 
@@ -113,6 +112,7 @@ test<-ggplot(allNDVIobs, aes(state, step)) +geom_violin()+geom_boxplot(width=.1)
 test
 allNDVIobs$Year<-as.factor(allNDVIobs$Year)
 ggplot(allNDVIobs, aes(JDate, tmax, fill = state, colour = state))+geom_smooth(method = "gam", formula = y ~ s(x, bs = "cs"))+facet_wrap(~Year)
+
 #######1st model = NDVI model (PREDICTION 1)
 HMMNDVI<- glmer(HMM ~ scale(NDVI) + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
 summary(HMMNDVI)  ####NDVI not influence mvt/stop behaviour
@@ -495,14 +495,6 @@ carsprUCI<-carsprfixef+(carsprSEs*1.96)
 carsprfixefR<-round(carsprfixef,3)
 ## Make the CIs
 carsprCI<-paste(carsprfixefR, " [",round(carsprLCI,3), ", ",round(carsprUCI,3),"]",sep="")
-
-stargazer(HMMall, type = "html",
-          column.labels = c("Model"),
-          intercept.bottom =  FALSE,
-          single.row = FALSE,
-          notes.append = FALSE,
-          header = FALSE,
-          out = "BestMoveHMMmodel.htm")
 
 names<-names(carsprfixef)
 carsprCInamed<-data.frame(names,carsprCI)
