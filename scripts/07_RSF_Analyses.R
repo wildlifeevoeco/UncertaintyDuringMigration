@@ -78,6 +78,12 @@ modelhab2<-glmer(Randoms ~ scale(Wetland) + scale(Forest) + scale(Lichen) + scal
 summ(modelhab2)
 
 boxplot((Lichen) ~ factor(Randoms)  , data = allNDVI_stop, notch = TRUE)
+boxplot((NDVI) ~ factor(Randoms)  , data = allNDVI_stop, notch = TRUE)
+
+
+ggplot(allNDVI_stop, aes(x = Randoms, y = NDVI)) +
+  geom_boxplot()+
+  theme_classic()
 
 ###Let's try habitat model with Year as fixed effect
 #PROBLEM
@@ -124,10 +130,15 @@ RSFWeatherHab_stop<-mclogit(cbind(Randoms,PtID)~(scale(Forest)*(scale(prcp) + sc
 
 summary(RSFWeatherHab_stop)
 
+RSFWeatherHab_stop2<-mclogit(cbind(Randoms,PtID)~ scale(Forest) + scale(Wetland) + 
+                              scale(Lichen) + scale(Rocky) + scale(Water) + scale(tmax) + scale(prcp) + scale(swe) + scale(Lichen)*scale(prcp)*scale(swe), data = allNDVI_stop)
+
+summary(RSFWeatherHab_stop2)
 ###Weather:Habitat RSF with interaction between Lichen/Weather and Forest/Weather
 RSFWeatherHab_stop2<-mclogit(cbind(Randoms,PtID)~(scale(Forest)*(scale(prcp) + scale(swe) + scale(tmax))) + 
                       (scale(Lichen)*(scale(prcp)+scale(swe)+scale(tmax)))+ scale(Forest) + scale(Wetland) + 
                       scale(Lichen) + scale(Rocky) + scale(Water) + scale(tmax) + scale(prcp) + scale(swe), data = allNDVI_stop)
+
 
 summary(RSFWeatherHab_stop2)
 
