@@ -524,7 +524,7 @@ ggplot(beta_coefficient, aes(Variables, b)) +
                 colour="black", width = 0,
                 position = position_dodge(width = 0.5)) +
   geom_hline(yintercept = 0, linetype = 'dotted') +
-  ylim(-2,2) +
+  ylim(-0.6,0.6) +
   xlab("") +
   ylab("Beta coefficient (+/- 95% CI)") +
   coord_flip()+
