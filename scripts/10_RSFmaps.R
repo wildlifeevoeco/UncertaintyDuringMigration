@@ -1,29 +1,24 @@
-<<<<<<< HEAD
-Filesraster<-list.files('S:/Local-git/ewc/input/covariates/NL')
+Filesraster<-list.files('D:/Landcover')
 
 Ant<-raster('Anthro100.tif')
-=======
+
 library(raster)
 
 rasterOptions(tmpdir = 'output/temp-files')
 Filesraster<-list.files('S:/Local-git/ewc/input/covariates/NL')
 
 ####load habitat raster
->>>>>>> master
+
 Bro<-raster('Broadleaf100.tif')
 Con<-raster('Conifer100.tif')
 Lic<-raster('Lichen100.tif')
 Mix<-raster('MixedWood100.tif')
 Roc<-raster('Rocky100.tif')
-<<<<<<< HEAD
 Scr<-raster('Scrub100.tif')
-=======
->>>>>>> master
 Wat<-raster('Water100.tif')
 Wet<-raster('Wetland100.tif')
 Forest<-Bro+Con+Mix
 
-<<<<<<< HEAD
 RSFCaribouSum<-mclogit(cbind(Randoms,PtID)~Forest*((prcp)+(swe) +(tmax)) + Lichen*((prcp)+(swe)+(tmax))+ Forest + Wetland + Lichen + Rocky + Water + tmax + prcp + swe + NDVI, data = allNDVI_stop)
 
 
@@ -37,7 +32,6 @@ plot(Wat,col=c("transparent","blue"),legend=F)
 
 plot(SumRSF)
 
-=======
 ###Combine poly + layer to only extract values and run RSF into this polygon of MiddleRidge herd
 ##need to run mcp code before
 cropBroadleaf <-crop(Bro,poly)
