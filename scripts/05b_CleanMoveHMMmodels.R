@@ -257,23 +257,26 @@ summary(modelNDVI7)
 summary(modelNDVI8)
 
 
-modelNDVI9 <- glmer(HMM ~ NDVISc + sweSc + LichenSc + WetlandSc + ForestSc + RockySc + WaterSc + LichenSc:NDVISc + WetlandSc:NDVISc + ForestSc:NDVISc +RockySc:NDVISc + WetlandSc:sweSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
-modelNDVI10 <- glmer(HMM ~ NDVISc + sweSc + LichenSc + WetlandSc + ForestSc + RockySc + WaterSc + LichenSc:NDVISc + WetlandSc:NDVISc + ForestSc:NDVISc + RockySc:NDVISc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
-modelNDVI11<- glmer(HMM ~ NDVISc + sweSc + LichenSc + WetlandSc + ForestSc + RockySc + WaterSc +  LichenSc:NDVISc + WetlandSc:NDVISc + RockySc:NDVISc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
+modelNDVI9 <- glmer(HMM ~ NDVISc + sweSc + LichenSc + WetlandSc + ForestSc + RockySc + WaterSc + LichenSc:NDVISc + WetlandSc:NDVISc  +RockySc:NDVISc + WetlandSc:sweSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
+modelNDVI10 <- glmer(HMM ~ NDVISc + sweSc + LichenSc + WetlandSc + ForestSc + RockySc + WaterSc + LichenSc:NDVISc + ForestSc:NDVISc + RockySc:NDVISc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
+modelNDVI11<- glmer(HMM ~ NDVISc  + LichenSc + WetlandSc + ForestSc + RockySc + WaterSc +  LichenSc:NDVISc + WetlandSc:NDVISc + RockySc:NDVISc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
+modelNDVI12 <- glmer(HMM ~ NDVISc + sweSc + LichenSc + WetlandSc + ForestSc + RockySc + WaterSc + LichenSc:NDVISc +RockySc:NDVISc + WetlandSc:sweSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
 
 summary(modelNDVI9) ##
 summary(modelNDVI10) ## 
 summary(modelNDVI11) ##
+summary(modelNDVI12)
+
 
 aics<-AIC(model1,model2,model3,modelNDVI1,modelNDVI2,modelNDVI3,modelNDVI4,modelNDVI5,modelNDVI6,modelNDVI7,modelNDVI8,modelNDVI9,
-          modelNDVI10,modelNDVI11)
+          modelNDVI10,modelNDVI11,modelNDVI12)
 aicMin<-min(aics$AIC)
 aics$deltaaic<-aics$AIC-aicMin
 aics
 Weights(aics)
 
 
-stargazer(modelNDVI9, modelNDVI10, modelNDVI11, modelNDVI4, type = "html",
+stargazer(modelNDVI12, modelNDVI9, modelNDVI11, modelNDVI10, type = "html",
           column.labels = c("Model"),
           intercept.bottom =  FALSE,
           single.row = FALSE,
@@ -286,6 +289,8 @@ stargazer(modelNDVI9, modelNDVI10, modelNDVI11, modelNDVI4, type = "html",
 model6 <- glmer(HMM ~ prcpSc + tmaxSc + LichenSc + WetlandSc + ForestSc + RockySc + WaterSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
 model7 <- glmer(HMM ~ tmaxSc + LichenSc + WetlandSc + ForestSc + RockySc + WaterSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
 summary(model6)
+summary(model7)
+
 
 model8 <- glmer(HMM ~ tmaxSc + LichenSc + WetlandSc + ForestSc + RockySc + WaterSc + tmaxSc:ForestSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
 model9 <- glmer(HMM ~ tmaxSc + LichenSc + WetlandSc + ForestSc + RockySc + WaterSc + tmaxSc:LichenSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
@@ -367,19 +372,19 @@ stargazer(model25,model24,model23, model22, type = "html",
 
 ######3 models together 
 model26 <- glmer(HMM ~ NDVISc + sweSc + tmaxSc + prcpSc + LichenSc + WetlandSc + 
-                   ForestSc + RockySc + WaterSc + LichenSc*NDVISc + WetlandSc*NDVISc + ForestSc*NDVISc +
-                   RockySc*NDVISc + NDVISc*tmaxSc + prcpSc*sweSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
+                   ForestSc + RockySc + WaterSc + LichenSc*NDVISc + WetlandSc*NDVISc +
+                   RockySc*NDVISc + NDVISc*tmaxSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
 
 model27 <- glmer(HMM ~ NDVISc + sweSc + tmaxSc + prcpSc + LichenSc + WetlandSc + 
-                   ForestSc + RockySc + WaterSc + LichenSc*tmaxSc + RockySc*tmaxSc + WetlandSc*prcpSc + ForestSc*prcpSc + NDVISc*tmaxSc + prcpSc*sweSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
+                   ForestSc + RockySc + WaterSc + LichenSc*tmaxSc + RockySc*tmaxSc + WetlandSc*prcpSc + ForestSc*prcpSc + NDVISc*tmaxSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
 
-model28 <- glmer(HMM ~ NDVISc + sweSc + tmaxSc + prcpSc + LichenSc + WetlandSc + 
+model28 <- glmer(HMM ~ NDVISc + tmaxSc + prcpSc + LichenSc + WetlandSc + 
                    ForestSc + RockySc + WaterSc + LichenSc*NDVISc + WetlandSc*NDVISc + RockySc*NDVISc +
-                   ForestSc*NDVISc + LichenSc*tmaxSc + RockySc*tmaxSc + WetlandSc*prcpSc + ForestSc*prcpSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
+                   LichenSc*tmaxSc + RockySc*tmaxSc + WetlandSc*prcpSc + ForestSc*prcpSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
 
-model29 <- glmer(HMM ~ NDVISc + sweSc + tmaxSc + prcpSc + LichenSc + WetlandSc + 
-                   ForestSc + RockySc + WaterSc + LichenSc*NDVISc + WetlandSc*NDVISc + RockySc*NDVISc +
-                   ForestSc*NDVISc + LichenSc*tmaxSc + RockySc*tmaxSc + WetlandSc*prcpSc + ForestSc*prcpSc + NDVISc*tmaxSc + prcpSc*sweSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
+model29 <- glmer(HMM ~ NDVISc  + tmaxSc + prcpSc + LichenSc + WetlandSc + 
+                   ForestSc + RockySc + WaterSc + LichenSc*NDVISc + WetlandSc*NDVISc + RockySc*NDVISc
+                 + LichenSc*tmaxSc + RockySc*tmaxSc + WetlandSc*prcpSc + ForestSc*prcpSc + NDVISc*tmaxSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
 summary(model26)
 summary(model27)
 summary(model28)
@@ -390,11 +395,11 @@ aics<-AIC(model26,model27,model28,model29)
 aicMin<-min(aics$AIC)
 aics$deltaaic<-aics$AIC-aicMin
 aics
-Weights(aics)
+  Weights(aics)
 
 
 aics<-AIC(model1,model2,model3,modelNDVI2,modelNDVI3,modelNDVI4,modelNDVI5,modelNDVI6,modelNDVI7,modelNDVI8,modelNDVI9,
-          modelNDVI10,modelNDVI11,model6, model7,model8,model9,model10,model11,model12,model13,model14,model15,model16,model17,
+          modelNDVI10,modelNDVI11,modelNDVI12,model6, model7,model8,model9,model10,model11,model12,model13,model14,model15,model16,model17,
           model18,model19,model20,model21,model22,model23,model24,model25,model26,model27,model28,model29)
 aicMin<-min(aics$AIC)
 aics$deltaaic<-aics$AIC-aicMin
