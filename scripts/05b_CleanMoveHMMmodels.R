@@ -90,6 +90,9 @@ hab3<- glmer(HMM ~ RockySc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family
 hab4<- glmer(HMM ~ ForestSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
 hab5<- glmer(HMM ~ WaterSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
 
+
+hab1_bis<- glm(HMM ~ LichenSc + (1|Animal_ID) + (1|Year), data = allNDVIobs, family = "binomial")
+
 summary(nohab)
 summary(hab1)
 summary(hab2)

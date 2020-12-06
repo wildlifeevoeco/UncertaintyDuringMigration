@@ -38,6 +38,30 @@ ggplot(allNDVIobs, aes(x=Year, y=tmax, fill = state)) +
           colour = 'black',
           fill = NA,
           size = 1))
+
+
+ggplot(allNDVIobs, aes(x=FixDate, y=tmax)) + 
+  geom_line(size = 1.1, alpha = 0.8, color = "steelblue")+
+  # scale_color_manual(values = c("steelblue"))+
+  stat_smooth(
+    color = "#FC4E07", fill = "#FC4E07",
+    method = "loess"
+  )+
+  # scale_fill_manual(values=c("#E69F00", "#56B4E9"))+
+  theme_bw() +
+  facet_wrap(~Year, scales = "free")+
+  labs(title = "Evolution of temperature between 2010 and 2013")+
+  xlab("Date") + ylab("Maximum temperature")+
+  theme(axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+
+
 ####Bartlett for temperature
 bartlett.test(tmax ~ state, data = allNDVIobs) ###variance temp between states
 bartlett.test(tmax ~ Year, data = allNDVIobs) ##variance temp between years
@@ -48,6 +72,27 @@ aov(Mileage~Brands)
 ####plot swe across years
 ggplot(allNDVIobs, aes(x=Year, y=swe, fill = state)) + 
   geom_boxplot()
+
+ggplot(allNDVIobs, aes(x=FixDate, y=swe)) + 
+  geom_line(size = 1.1, alpha = 0.8, color = "steelblue")+
+  # scale_color_manual(values = c("steelblue"))+
+  stat_smooth(
+    color = "#FC4E07", fill = "#FC4E07",
+    method = "loess"
+  )+
+  # scale_fill_manual(values=c("#E69F00", "#56B4E9"))+
+  theme_bw() +
+  facet_wrap(~Year, scales = "free")+
+  labs(title = "Evolution of temperature between 2010 and 2013")+
+  xlab("Date") + ylab("Maximum temperature")+
+  theme(axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
 
 ####Bartlett for swe
 bartlett.test(swe ~ state, data = allNDVIobs) ###variance swe between states
@@ -73,6 +118,26 @@ ggplot(allNDVIobs, aes(x=Year, y=prcp, fill = state)) +
           fill = NA,
           size = 1))
 
+ggplot(allNDVIobs, aes(x=FixDate, y=prcp)) + 
+  geom_line(size = 1.1, alpha = 0.8, color = "steelblue")+
+  # scale_color_manual(values = c("steelblue"))+
+  stat_smooth(
+    color = "#FC4E07", fill = "#FC4E07",
+    method = "loess"
+  )+
+  # scale_fill_manual(values=c("#E69F00", "#56B4E9"))+
+  theme_bw() +
+  facet_wrap(~Year, scales = "free")+
+  labs(title = "Evolution of precipitation between 2010 and 2013")+
+  xlab("Date") + ylab("Precipitation")+
+  theme(axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
 
 ####Bartlett for NDVI
 bartlett.test(NDVI ~ state, data = allNDVIobs) ###variance NDVI between states
@@ -85,6 +150,27 @@ ggplot(allNDVIobs, aes(x=Year, y=NDVI, fill = state)) +
   scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9"))+
   theme_bw() +
   labs(title = "Evolution of NDVI values")+
+  theme(axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+
+ggplot(allNDVIobs, aes(x=FixDate, y=NDVI)) + 
+  geom_line(size = 1.1, alpha = 0.8, color = "steelblue")+
+  # scale_color_manual(values = c("steelblue"))+
+  stat_smooth(
+    color = "#FC4E07", fill = "#FC4E07",
+    method = "loess"
+  )+
+  # scale_fill_manual(values=c("#E69F00", "#56B4E9"))+
+  theme_bw() +
+  facet_wrap(~Year, scales = "free")+
+  labs(title = "Evolution of precipitation between 2010 and 2013")+
+  xlab("Date") + ylab("NDVI")+
   theme(axis.title.y = element_text(size = 12, color = 'black'),
         axis.text = element_text(size = 10, color = 'black'),
         panel.grid.minor = element_blank(),
@@ -146,7 +232,7 @@ write.csv(Observed,'~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Rando
 
 library(raster)
 utm21N <- '+proj=utm +zone=21 ellps=WGS84'
-lc <- shapefile("~/Documents/Emilie_project/Git/GIS/NL-Bounds.shp")
+lc <- shapefile("C:/Users/emitn/Documents/Internship 2019 Mun/Git/emilie_nlcaribou_2020/input/NL-Bounds/NL-Bounds.shp")
 
 ggplot(lc) +
   geom_polygon(aes(long,lat, group = group)) +
@@ -644,6 +730,7 @@ mr2009a15 <- dataDisp %>% filter(ANIMAL_ID=='mr2009a15')
 mr2009a152010 <- mr2009a15 %>% filter(year=='2010') 
 write.csv(mr2009a152010,'~/Documents/Emilie_project/Git/emilie_nlcaribou/output/mr2009a152010.csv')
 save(mr2009a152010, file="~/Documents/Emilie_project/Git/emilie_nlcaribou/output/mr2009a152010.csv")
+
 write.csv(Observed,'~/Documents/Emilie_project/Git/emilie_nlcaribou/output/RandomPoints/Observed.csv')
 
 
@@ -775,7 +862,7 @@ multiplot(tmax1,tmax2,tmax3,tmax4, cols = 2)
 ####density temperature pts by state,year
 
 density1<- ggplot(all2010, aes(x=tmax, colour=as.factor(state), group = as.factor(state))) +
-  geom_density()+
+  geom_density(size = 0.8)+
   theme_bw() +
   labs(title = "Year 2010", color = "State")+
   theme(legend.position = c(0.9, 0.2),
@@ -787,6 +874,22 @@ density1<- ggplot(all2010, aes(x=tmax, colour=as.factor(state), group = as.facto
           colour = 'black',
           fill = NA,
           size = 1))
+
+ggplot(allNDVIobs, aes(x=tmax)) +
+  geom_density(size = 0.8)+
+  theme_bw() +
+  facet_wrap(.~Year)
+  labs(title = "Year 2010", color = "State")+
+  theme(legend.position = c(0.9, 0.2),
+        axis.title.y = element_text(size = 12, color = 'black'),
+        axis.text = element_text(size = 10, color = 'black'),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(
+          colour = 'black',
+          fill = NA,
+          size = 1))
+
 density2<- ggplot(all2011, aes(x=tmax, colour=as.factor(state), group = as.factor(state))) +
   geom_density()+
   theme_bw() +
@@ -1004,4 +1107,4 @@ multiplot(p2,p3,p4, cols = 2)
 
 gglot(allNDVIobs, aes())
 
->>>>>>> master
+
