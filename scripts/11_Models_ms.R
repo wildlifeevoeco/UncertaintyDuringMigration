@@ -14,10 +14,15 @@ library(broom.mixed)
 library(performance)
 
 libs <- c('data.table', 'dplyr', 'lubridate', 'lme4', 'broom.mixed', 'performance', 'ggeffects',
-          'tidyr', 'ggplot2','survival', 'patchwork', 'AICcmodavg', 'ggthemes', 'see')
+          'tidyr', 'ggplot2','survival', 'patchwork', 'AICcmodavg', 'ggthemes', 'see', 'data.table')
 lapply(libs, require, character.only = TRUE)
 
 ##-
+
+## load all NDVI data
+
+allNDVIobs <- fread("output/allNDVIobs.csv")
+
 str(allNDVIobs$HMM)
 
 # allNDVIobs$HMM <- as.numeric(as.character(allNDVIobs$HMM))
@@ -84,7 +89,7 @@ pred.hab.for <- ggpredict(M1_hab, terms = c('Forest'))
 plot(pred.hab.for)
 
 
-print(M1_hab, corr = FALSE)
+xprint(M1_hab, corr = FALSE)
 # library(effects)
 # plot(allEffects(M1_hab))
 
@@ -160,8 +165,9 @@ exp(tab)
 
 ##M1 Hab + meteo ----
 ##without interaction
+
 M1 <- glmer(HMM ~ scale(Wetland) + scale(Lichen) + scale(Forest) + scale(tmax) +
-              scale(swe) + scale(prcp) + (1|Animal_ID), data = allNDVIobs, family = "binomial")
+              scale(swe) + scale(prcp) + (1|IDYear), data = allNDVIobs, family = "binomial")
 summary(M1)
 Anova(M1)
 
@@ -169,7 +175,7 @@ Anova(M1)
 M1_inter <-  glmer(HMM ~ scale(Wetland) + scale(Lichen) + scale(Forest) + scale(tmax) +
                      scale(swe) + scale(prcp) + scale(Wetland)*scale(tmax) + scale(Wetland)*scale(swe) +
                      scale(Wetland)*scale(prcp) + scale(Lichen)*scale(tmax) + scale(Lichen)*scale(swe) + scale(Lichen)*scale(prcp) +
-                     scale(Forest)*scale(tmax) + scale(Forest)*scale(swe) + scale(Forest)*scale(prcp) + (1|Animal_ID), data = allNDVIobs, family = "binomial")
+                     scale(Forest)*scale(tmax) + scale(Forest)*scale(swe) + scale(Forest)*scale(prcp) + (1|IDYear), data = allNDVIobs, family = "binomial")
 summary(M1_inter)
 
 fixef(M1_inter)
@@ -276,7 +282,7 @@ library(stargazer)
 
 ##read file###
 allNDVI<- readRDS("C:/Users/emitn/Documents/Internship 2019 Mun/Git/emilie_nlcaribou/output/allNDVI.RDS")
-
+allNDVI <- readRDS("output/allNDVI.RDS")
 ####Changing name of available and used pts to easily interpret them after
 allNDVI$Randoms<-ifelse(allNDVI$Randoms=="1",1,0) #### 0 == available and 1 == used 
 head(allNDVI)
