@@ -1,41 +1,35 @@
 ######### Extract randoms points for RSF ######## (Mike's code)
-## Load packages
 
-library(raster)
-library(adehabitatHR)
-library(spatstat)
-library(maptools)
-library(data.table)
-library(rgdal)
-#devtools::install_github('robitalec/toast')
-library(toast)
+rm(list=ls())
+
+### Packages ---
+libs <- c('data.table', 'moveHMM',  'raster', 'adehabitatHR',
+          'dplyr', 'spatstat', 'maptools', 'data.table', 'rgdal', 'toast')
+lapply(libs, require, character.only = TRUE)
 
 #### Migration data
 
-### Read in the data
-
-Migr<-readRDS("~/Documents/Emilie_project/Git/emilie_nlcaribou/output/MoveHMM/outMR.RDS")
+Migr<-readRDS("~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/outMR.Rds")
 
 ## Re-order the data so it's in the correct order
 Migr<-Migr[order(Migr$IDYear,Migr$JDateTime),]
 
-Migr = subset(Migr, select = -c(19))
 ## Add a point ID field
-Migr$PtID<-c(1:nrow(Migr))
+# Migr$PtID<-c(1:nrow(Migr))
 summary(Migr)
 
 ## Remove vestigial "X" field
-Migr$X<-NULL
+# Migr$X<-NULL
 
 head(Migr)
 
 ### Migration models
 
 ## Rename columns
-colnames(Migr)<-c("IDYear","ID","Herd","FixDate","FixTime","Year","Month","JDate","Easting","Northing",
-                  "Time","JDateTime","Calved","Lost","CalvingDate","LossDate","NSD","Displace",
-                  "MigStartDay","MigEndDay","MigDuration","PtID")
-
+colnames(Migr)<-c("Easting","Northing", "IDYear","Animal_ID","Herd","FixDate","FixTime","Year","Month","JDate",
+                  "Time","JDateTime","Calved", "Lost","CalvingDate", "LossDate", "NSD","Displace",
+                  "MigStartDay","MigEndDay","MigDuration", "PtID","state", "step", "angle", "(Intercept)", "stepRes",
+                  "angleRes")
 head(Migr)
 
 ### Making the random points by herd
@@ -105,20 +99,23 @@ RandDataMidR<-data.frame(rpMidR$Animal_ID, rpMidR$IDYear,rpMidR$Herd, rpMidR$Fix
 RandDataMidR$Presence<-0
 
 ##Put together matching used data
-PresDataMidR<-data.frame(Migr$Animal_ID,Migr$IDYear,Migr$Herd,Migr$FixDate,
-                         Migr$FixTime,Migr$Year,Migr$Month,Migr$JDate,
-                         Migr$Easting,Migr$Northing,Migr$PtID,Migr$Time,
-                         Migr$JDateTime,Migr$NSD,Migr$Displace,Migr$MigStartDay,
-                         Migr$MigEndDay,Migr$MigDuration,Migr$state,Migr$step, 
-                         Migr$angle, Migr$stepRes, Migr$angleRes)
+colnames(RandDataMidR)
+PresDataMidR<-data.frame(Migr$Easting,Migr$Northing,Migr$IDYear,
+                         Migr$Animal_ID,Migr$Herd,Migr$FixDate,
+                         Migr$FixTime,Migr$Year,Migr$Month,Migr$JDate,Migr$Time,
+                         Migr$JDateTime, Migr$NSD,Migr$Displace,Migr$MigStartDay,
+                         Migr$MigEndDay,Migr$MigDuration,Migr$PtID,
+                         Migr$state,Migr$step, 
+                         Migr$angle, Migr$`(Intercept)`, Migr$stepRes, Migr$angleRes)
 
 ##Set Presence to 1
 PresDataMidR$Presence<-1
 
 ## Make column names
-ColNames<-c("Animal_ID","IDYear","Herd","FixDate","FixTime","Year","Month","JDate","Easting",
-            "Northing","PtID","Time","JDateTime","NSD","Displace","MigStartDay","MigEndDay",
-            "MigDuration", "state", "step", "angle", "stepRes", "angleRes")
+ColNames<-c("Easting","Northing", "IDYear","Animal_ID","Herd","FixDate","FixTime","Year","Month","JDate",
+            "Time","JDateTime", "NSD","Displace",
+            "MigStartDay","MigEndDay","MigDuration", "PtID","state", "step", "angle", "(Intercept)", "stepRes",
+            "angleRes")
 
 ## Set column names for true and random data
 colnames(RandDataMidR)<-ColNames
@@ -127,40 +124,49 @@ colnames(PresDataMidR)<-ColNames
 ### Dataset that includes all random locations...no spatial data yet though
 
 ## Put used and random points together
-#RandDataMidR = subset(RandDataMidR, select = -c(24))
+PresDataMidR = subset(PresDataMidR, select = -c(25))
 DataNewMidR<-rbind(PresDataMidR,RandDataMidR)
 
 ## New Point ID field (old pt ID field = "strata" field)
 DataNewMidR$ptID<-c(1:nrow(DataNewMidR))
 DataSortMidR<-DataNewMidR[order(DataNewMidR$JDate),]
 
-summary(DataSortMidR)
 
-saveRDS(DataSortMidR, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/RandomPoints/RSFMigrationMR.RDS")
-DataSortMidR <- RSFMigrationMR
-rm(list=ls())
+saveRDS(DataSortMidR, "~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/RSFdata_MigrationMR.RDS")
+
+
 
 ###### Eliminate data that fall in water or that have NAs#######
 ################################################################
 
 ## Read in water raster
-Water<-raster("~/Documents/Emilie_project/Git/Landcover/Water.tif")
+Water<-raster("/Internship 2019 Mun/Git/emilie_nlcaribou/input/Landcover/Water.tif")
 
 DataSortMidR$IsWater<-extract(Water,data.frame(DataSortMidR$Easting,DataSortMidR$Northing))
 ## Exclude points that fall in water
 DataSortMidR<-subset(DataSortMidR,IsWater==0)
 
 #######Save file with obs/randoms pts##########
-summary(DataSortMidR)
+# summary(DataSortMidR)
 names(DataSortMidR)[24]<-"Randoms"
 saveRDS(DataSortMidR, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/RandomPoints/RSFMigrationMRfinal.RDS")
 
+
+RSFMigrationMRfinal <- readRDS("~/Internship 2019 Mun/Git/emilie_nlcaribou/output/RandomPoints/RSFMigrationMRfinal.RDS")
+
 #####subset data by random and obs points separately ########3
-RSFMigrationMR$Randoms <- as.factor(RSFMigrationMR$Randoms)
+RSFMigrationMRfinal$Randoms <- as.factor(RSFMigrationMRfinal$Randoms)
 Randoms<-subset(RSFMigrationMRfinal, Randoms != "1")
 Observed<-subset(RSFMigrationMRfinal, Randoms == "1")
 saveRDS(Randoms, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/RandomPoints/Randoms.RDS")
 saveRDS(Observed, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/RandomPoints/Observed.RDS")
+
+write.csv2(Randoms, "~/Internship 2019 Mun/Git/emilie_nlcaribou/output/Randoms.csv")
+write.csv2(Observed, "~/Internship 2019 Mun/Git/emilie_nlcaribou/output/Observed.csv")
+
+data.table::fwrite(Observed, 'Observed.csv')
+data.table::fwrite(Randoms, 'Randoms.csv')
+
 
 ####### Finally number of pts in the study with 30 individuals #####
 numloc <- Observed %>%
@@ -187,9 +193,11 @@ Random3 <- as.data.table(Random3)
 Random4 <- as.data.table(Random4)
 
 #################Prepare folders with data.table/shp ######
+setwd("~/Internship 2019 Mun/Git/emilie_nlcaribou")
+
 build_pt_asset(
   DT = Random1,
-  out = 'output/Random1-emilie-nlcaribou',
+  out = 'output/Random1-emilie-nlcaribou_2020',
   projection = utm21N,
   id = 'Animal_ID',
   coords = c('Easting', 'Northing'),
@@ -197,7 +205,7 @@ build_pt_asset(
 
 build_pt_asset(
   DT = Random2,
-  out = 'output/Random2-emilie-nlcaribou',
+  out = 'output/Random2-emilie-nlcaribou_2020',
   projection = utm21N,
   id = 'Animal_ID',
   coords = c('Easting', 'Northing'),
@@ -205,7 +213,7 @@ build_pt_asset(
 
 build_pt_asset(
   DT = Random3,
-  out = 'output/Random3-emilie-nlcaribou',
+  out = 'output/Random3-emilie-nlcaribou_2020',
   projection = utm21N,
   id = 'Animal_ID',
   coords = c('Easting', 'Northing'),
@@ -213,7 +221,7 @@ build_pt_asset(
 
 build_pt_asset(
   DT = Random4,
-  out = 'output/Random4-emilie-nlcaribou',
+  out = 'output/Random4-emilie-nlcaribou_2020',
   projection = utm21N,
   id = 'Animal_ID',
   coords = c('Easting', 'Northing'),
@@ -221,7 +229,7 @@ build_pt_asset(
 
 build_pt_asset(
   DT = Observed,
-  out = 'output/Observed-emilie-nlcaribou',
+  out = 'output/Observed-emilie-nlcaribou_2020',
   projection = utm21N,
   id = 'Animal_ID',
   coords = c('Easting', 'Northing'),
@@ -230,14 +238,91 @@ build_pt_asset(
 #########AFTER DOWNLOADED DATA FROM EARTH ENGINE###########
 ###After EE
 obsDaymet <- fread('output/Observed-emilie-nlcaribou/observed-daymet.csv')
-rdm1Daymet <- fread('~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Random1-emilie-nlcaribou/random1-daymet.csv')
-rdm2Daymet <- fread('~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Random2-emilie-nlcaribou/random2-daymet-2.csv')
-rdm3Daymet <- fread('~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Random3-emilie-nlcaribou/random3-daymet.csv')
-rdm4Daymet <- fread('~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Random4-emilie-nlcaribou/random4-daymet.csv')
+rdm1Daymet <- fread('~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Random1-emilie-nlcaribou_2020/random1-daymet.csv')
+rdm2Daymet <- fread('~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Random2-emilie-nlcaribou_2020/random2-daymet-2.csv')
+rdm3Daymet <- fread('~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Random3-emilie-nlcaribou_2020/random3-daymet.csv')
+rdm4Daymet <- fread('~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Random4-emilie-nlcaribou_2020/random4-daymet.csv')
 
 rdm3Daymet = subset(rdm3Daymet, select = -c(20:21))
 rdmDaymet <- rbindlist(list(rdm1Daymet, rdm2Daymet, rdm3Daymet, rdm4Daymet))
 
+obsNDSI <- fread("C:/Users/emitn/Documents/Internship 2019 Mun/Git/emilie_nlcaribou/output/ouput_gee/observed-ndsi.csv")
+RanNDSI <- fread("C:/Users/emitn/Documents/Internship 2019 Mun/Git/emilie_nlcaribou/output/ouput_gee/random-ndsi.csv")
+
+###Test if ndsi data are correct
+colnames(obsNDSI)
+
+hist(obsNDSI$NDSI_Snow_Cover)
+summary(obsNDSI$NDSI_Snow_Cover)
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+#    0.00    0.00   58.00   46.01   77.00   91.00   27473
+hist(obsNDSI$NDSI_Snow_Cover_Algorithm_Flags_QA, breaks = 60)
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+#  0.0000  0.0000  0.0000  0.0555  0.0000 14.0000      81
+summary(obsNDSI$NDSI_Snow_Cover_Algorithm_Flags_QA)
+hist(obsNDSI$NDSI_Snow_Cover_Basic_QA)
+summary(obsNDSI$NDSI_Snow_Cover_Basic_QA)
+hist(obsNDSI$NDSI_Snow_Cover_Class)
+summary(obsNDSI$NDSI_Snow_Cover_Class)
+hist(obsNDSI$Snow_Albedo_Daily_Tile)
+summary(obsNDSI$Snow_Albedo_Daily_Tile)
+summary(obsNDSI$NDSI)
+
+obsNDSI$state  <- as.factor(obsNDSI$state)
+ggplot(data = obsNDSI, aes (x = state, y = NDSI_Snow_Cover)) +
+  geom_boxplot()
+
+obsNDSI_subNA <- subset(obsNDSI, NDSI_Snow_Cover)
+obsNDSI_subNA <- subset(obsNDSI, is.na(obsNDSI$NDSI_Snow_Cover))
+summary(obsNDSI_subNA$imgdoy)
+summary(obsNDSI_subNA$imgyear)
+
+data.table::fwrite(obsNDSI_subNA, 'obsNDSI_subNA.csv')
+
+
+###
+obsNDSI[, .N, by = .(is.na(NDSI_Snow_Cover), NDSI_Snow_Cover_Class)]
+
+###Same with random 
+###Test if ndsi data are correct
+colnames(RanNDSI)
+
+hist(RanNDSI$NDSI_Snow_Cover)
+summary(RanNDSI$NDSI_Snow_Cover)
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+#    0.00    0.00   58.00   46.01   77.00   91.00   27473
+hist(RanNDSI$NDSI_Snow_Cover_Algorithm_Flags_QA, breaks = 60)
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+#  0.0000  0.0000  0.0000  0.0555  0.0000 14.0000      81
+summary(RanNDSI$NDSI_Snow_Cover_Algorithm_Flags_QA)
+hist(RanNDSI$NDSI_Snow_Cover_Basic_QA)
+summary(RanNDSI$NDSI_Snow_Cover_Basic_QA)
+hist(RanNDSI$NDSI_Snow_Cover_Class)
+summary(RanNDSI$NDSI_Snow_Cover_Class)
+hist(RanNDSI$Snow_Albedo_Daily_Tile)
+summary(RanNDSI$Snow_Albedo_Daily_Tile)
+summary(RanNDSI$NDSI)
+
+RanNDSI$state  <- as.factor(RanNDSI$state)
+ggplot(data = RanNDSI, aes (x = state, y = NDSI_Snow_Cover)) +
+  geom_boxplot()
+
+RanNDSI_subNA <- subset(RanNDSI, NDSI_Snow_Cover)
+RanNDSI_subNA <- subset(RanNDSI, is.na(RanNDSI$NDSI_Snow_Cover))
+summary(RanNDSI_subNA$imgdoy)
+summary(RanNDSI_subNA$imgyear)
+
+RanNDSI[, .N, by = .(is.na(NDSI_Snow_Cover), NDSI_Snow_Cover_Class)]
+
+DT <- fread('obsNDSI_subNA.csv')
+RanNDSI_subNA[, `.geo` := NULL]
+
+RanNDSI_subNA[is.na(NDSI_Snow_Cover),
+   .N,
+   by = .(NDSI_Snow_Cover_Algorithm_Flags_QA,
+          NDSI_Snow_Cover_Basic_QA,
+          NDSI_Snow_Cover_Class,
+          Snow_Albedo_Daily_Tile_Class)][order(-N)]
 
 ######Solve problem with disparition of 'angle' and 'angleRes' columns######
 
