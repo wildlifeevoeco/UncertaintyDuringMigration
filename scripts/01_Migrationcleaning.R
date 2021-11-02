@@ -1,21 +1,46 @@
-###Exploration Migration dates ###
+###Cleaning migration data ###
 rm(list=ls())
 
 ##load packages
-.libPaths("C:/R") # location of your R packages
+# .libPaths("C:/R") # location of your R packages
 library(dplyr)
 library(data.table)
 
+
+# Time zone 
+tz <- 'America/St_Johns'
+
+### Projection ----
+projCols <- c('EASTING', 'NORTHING')
+
+utm21N <- '+proj=utm +zone=21 ellps=WGS84'
+
 ##open the csv
-migration <- read.csv("~/Documents/Emilie_project/Git/emilie_nlcaribou/input/MigrationDataNSD.csv")
+migration <- read.csv("~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/input/MigrationDataNSD.csv")
 migration <- as.data.table(migration)
+migration <- migration[,-1]  
 
 ##
-summary(migration)
+
 uniqueN(migration$Animal_ID) ##118 indiv in total
 
+
+##Number of ids by herds, 34 for MR
+migration %>% group_by(Herd) %>% 
+  summarize(n_id = uniqueN(Animal_ID))
+
+# Herd      n_id
+# BUCHANS     14
+# GREY        16
+# LAPOILE     18
+# MIDRIDGE    34
+# POTHILL     14
+# TOPSAILS    22
+
 #subset by indiv that had min 30km "migration" (min distance between first point and other pts)
+dplyr::count(migration,  migration$Displace < 30)
 mig <- migration[Displace >= 30]
+hist(mig$Displace)
 
 ###remove indiv that don't really migrate or not enough
 mig <- mig[IDYear != "mr2009a022012" & IDYear != "mr2009a032013" & IDYear != "mr2009a062012" &
@@ -25,20 +50,22 @@ mig <- mig[IDYear != "mr2009a022012" & IDYear != "mr2009a032013" & IDYear != "mr
            IDYear != "mr2009a242010" & IDYear != "mr2009a272010" & IDYear != "mr2009a292010" &
            IDYear != "mr2009a312010" & IDYear != "mr2009a312012" & IDYear != "mr2011a012013"]
 
-hist(mig$Displace)
-summary(mig)
+ 
 uniqueN(mig$Animal_ID) ###107 indiv after removed < 30km and false MR migration
 
-##tab of dates for all herds
-#summary.all <- mig %>%
-#  group_by(Animal_ID, Year)%>%
-#  summarise(first = min(MigStartDay) , 
-#            last = max(MigEndDay),
-#            meanduration = mean(MigDuration),
-#            total.fixes = n())
 
-avgJDate <- mig %>%
-  group_by(Herd, Year)%>%
+##Subsetting only Middle Ridge herd
+migration_MR<-subset(mig, Herd=="MIDRIDGE")
+migration_MR$Herd <- droplevels(migration_MR$Herd)
+unique(migration_MR$Herd)
+uniqueN(migration_MR$Animal_ID) ####30 ids
+
+migration_MR$FixDate <- as.character(migration_MR$FixDate, format = "%Y-%m-%d")
+
+###migration summary dates
+mig_MR_dates <- migration_MR %>%
+  group_by(Herd, Year)%>% 
+  mutate_if(is.numeric, round, 0)  %>%
   summarise(firststart = min(MigStartDay),
             laststart = max(MigStartDay),
             firstend = min(MigEndDay),
@@ -46,94 +73,54 @@ avgJDate <- mig %>%
             meanstart = mean(MigStartDay),
             meanend = mean(MigEndDay),
             meanduration = mean(MigDuration),
+            meandist = mean(Displace),
             total.fixes = n())
 
-avgJDate$firststart <- ceiling(avgJDate$firststart)
-avgJDate$laststart <- ceiling(avgJDate$laststart)
-avgJDate$firstend <- trunc(avgJDate$firstend, digits = 0)
-avgJDate$lastend <- trunc(avgJDate$lastend, digits = 0)
-avgJDate$meanstart <- round(avgJDate$meanstart)
-avgJDate$meanend <- round(avgJDate$meanend, digits = 1)
-avgJDate$meanduration <- round(avgJDate$meanduration, digits = 1)
-
-write.csv(avgJDate, '~/Documents/Emilie_project/Git/emilie_nlcaribou/output/avgJDate.csv')
-
-##Convert JDate in Calendar
-avg <- mig %>%
-  group_by(Herd,Year)%>%
-  summarise(firststart = min(MigStartDay),
-            laststart = max(MigStartDay),
-            firstend = min(MigEndDay),
-            lastend = max(MigEndDay),
-            meanstart = mean(MigStartDay),
-            meanend = mean(MigEndDay),
-            meanduration = mean(MigDuration),
+###migration summary distance and duration
+mig_MR_infos <- migration_MR %>%
+  group_by(Year)%>% 
+  mutate_if(is.numeric, round, 0)  %>%
+  summarise(min_dur = min(MigDuration),
+            max_dur = max(MigDuration),
+            mean_dur = mean(MigDuration),
+            sd_dur = sd(MigDuration),
+            min_dist = min(Displace),
+            max_dist = max(Displace),
+            mean_dist = mean(Displace),
+            sd_dist = sd(Displace),
             total.fixes = n())
 
-#firststart
-df <- data.table (Year = avg$Year,
-                  JDate = avg$firststart)
-df$JDate <- ceiling(df$JDate)
-date_info <- with(df, paste(Year, JDate))
-date <- strptime(date_info, "%Y %j")
-avg$firststart<- as.Date(date, format= "%Y-%m-%d")
 
-#laststart
-df <- data.table (Year = avg$Year,
-                  JDate = avg$laststart)
-df$JDate <- ceiling(df$JDate)
-date_info <- with(df, paste(Year, JDate))
-date <- strptime(date_info, "%Y %j")
-avg$laststart<- as.Date(date, format= "%Y-%m-%d")
+##nb of locations
+numloc <- migration_MR %>%
+  group_by(Year)%>%
+  summarise(total.fixes = n())
+# Year total.fixes
+# 2010        2774
+# 2011       23059
+# 2012        6255
+# 2013        3702
+sum(numloc$total.fixes) ### 35790 locations 
 
-#firstend
-df <- data.table (Year = avg$Year,
-                  JDate = avg$firstend)
-df$JDate <- trunc(df$JDate, digits = 0)
-date_info <- with(df, paste(Year, JDate))
-date <- strptime(date_info, "%Y %j")
-avg$firstend<- as.Date(date, format= "%Y-%m-%d")
+nbdays_id <- migration_MR %>%              ###some indiv move more than 30km but in 2 days for ex.
+  group_by(Animal_ID, Year)%>%
+  mutate_if(is.numeric, round, 0) %>%
+  summarise(fixes = n(),
+            numday = uniqueN(FixDate))
+min(nbdays_id$numday) ## 6 
+max(nbdays_id$numday) ## 94
 
-#lastend
-df <- data.table (Year = avg$Year,
-                  JDate = avg$lastend)
-df$JDate <- trunc(df$JDate, digits = 0)
-date_info <- with(df, paste(Year, JDate))
-date <- strptime(date_info, "%Y %j")
-avg$lastend<- as.Date(date, format= "%Y-%m-%d")
+#Number of dataindiv / herd and number year/indiv
+uniqueN(migration_MR$IDYear) ### 47 
 
-#meanstart
-df <- data.table (Year = avg$Year,
-                  JDate = avg$meanstart)
-df$JDate <- round(df$JDate, digits = 0)
-date_info <- with(df, paste(Year, JDate))
-date <- strptime(date_info, "%Y %j")
-avg$meanstart<- as.Date(date, format= "%Y-%m-%d")
+##Save output
+write.csv(mig_MR_dates, '~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/tables/mig_MR_dates.csv')
+write.csv(mig_MR_infos, '~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/tables/mig_MR_infos.csv')
 
-#meanend
-df <- data.table (Year = avg$Year,
-                  JDate = avg$meanend)
-df$JDate <- round(df$JDate, digits = 0)
-date_info <- with(df, paste(Year, JDate))
-date <- strptime(date_info, "%Y %j")
-avg$meanend<- as.Date(date, format= "%Y-%m-%d")
 
-#meanduration
-avg$meanduration <- round(avg$meanduration, digits = 1)
+saveRDS(migration_MR, '~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/migration_MR.RDS')
 
-write.csv(avg,'~/Documents/Emilie_project/Git/emilie_nlcaribou/output/datesgmigration.csv')
 
-saveRDS(mig, '~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Allmigrationdates.Rds')
+message('=== PREP COMPLETE ===')
 
-## Subset by Midridge herd
-Allmigration<-subset(mig, Herd=="MIDRIDGE")
-levels(Allmigration$Herd)
-Allmigration$Herd <- levels(droplevels(Allmigration$Herd))
-unique(Allmigration$Herd)
 
-#num indiv for Midridge 
-uniqueN(Allmigration$Animal_ID) ##30 indiv for 4 years
-Allmigration$FixDate <- as.character(Allmigration$FixDate, format = "%Y-%m-%d")
-
-## Save tab with 34 indiv from Midridge between 2010 and 2013
-saveRDS(Allmigration, '~/Documents/Emilie_project/Git/emilie_nlcaribou/output/AllmigrationMR.Rds')
