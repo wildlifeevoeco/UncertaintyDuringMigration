@@ -1,27 +1,20 @@
-#### MoveHMM analysis ###
+#### MoveHMM extraction###
+rm(list=ls())
 
-library(moveHMM)
-library(data.table)
+### Packages ---
+libs <- c('data.table', 'moveHMM', 'tseries')
+lapply(libs, require, character.only = TRUE)
 
 ## load data
-caribouclean<-readRDS("~/Documents/Emilie_project/Git/emilie_nlcaribou/output/cariboucleanMR.RDS")
+locs <-readRDS("~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/migration_MR.RDS")
 
-# check than all years for only MIDRIDGE is subset and drop others level
-MigrMidR<-subset(caribouclean, Herd=="MIDRIDGE")
-unique(MigrMidR$Year)
-levels(MigrMidR$Herd)
-MigrMidR$Herd <- levels(droplevels(MigrMidR$Herd))
-unique(MigrMidR$Herd)
-
-# Check number indiv == 34
-unique(MigrMidR$Animal_ID)
 
 ## Put the dataframe in order --> check year in first, then animal and then the date
-MigrOrdered <- MigrMidR[order(MigrMidR$Year, MigrMidR$Animal_ID, MigrMidR$JDateTime),]
-head(MigrMidR)
+locs <- locs[order(locs$Year, locs$Animal_ID, locs$JDateTime),]
+head(locs)
 
 ##Function 
-data<-data.frame(MigrOrdered$Easting,MigrOrdered$Northing,MigrOrdered$IDYear)
+data<-data.frame(locs$Easting,locs$Northing,locs$IDYear)
 colnames(data)<-c("x","y","ID")
 
 # Prep data to moveHMM
@@ -32,18 +25,40 @@ whichzero <- which(MRPrep$step == 0)
 length (whichzero/nrow(MRPrep))
 
 # Check step and angle graphs
-hist(MRPrep$step)
+hist(MRPrep$step) ### max = 12000
 hist(MRPrep$angle)
-
 head(MRPrep)
 
-##Fit HMM
+##Fit HMM ---> set parameters
 mid.fit<-fitHMM(MRPrep, nbStates=2, stepPar0=c(20,200,100,100,0.01,0.001), 
                 anglePar0=c(pi,0,1,3), verbose=2)
 
 mid.fit
-saveRDS(mid.fit, '~/Documents/Emilie_project/Git/emilie_nlcaribou/output/moveHMM/mid.fit.RDS')
-fitHMM1
+
+# Step length parameters:
+#   ----------------------
+#   state 1      state 2
+# mean      1.190991e+02 7.147807e+02
+# sd        1.589131e+02 7.058030e+02
+# zero-mass 3.968411e-04 5.813628e-08
+
+# Turning angle parameters:
+#   ------------------------
+#   state 1    state 2
+# mean          0.2702059 -0.0414552
+# concentration 0.1037351  1.5004377
+
+# Transition probability matrix:
+#   -----------------------------
+#   [,1]       [,2]
+# [1,] 0.9141342 0.08586577
+# [2,] 0.2053745 0.79462546
+
+
+saveRDS(mid.fit, '~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/mid.fit.RDS')
+
+
+
 ### Wrap up states + residuals ----
 # Decode the most probable state sequence - 1 = "encamped" 2 = "exploratory" (viterbi)
 #  + pseudo residuals
@@ -73,13 +88,15 @@ aggregate(locs.w.states$state, locs.w.states[,c("state")], length)
 summary(locs.w.states)
 
 # Merge the states back onto the locs
-outMR <- merge(MigrMidR, locs.w.states, 
+outMR <- merge(locs, locs.w.states, 
              by.x = c('Easting','Northing','IDYear'),
              by.y = c('x', 'y', 'ID'))
-MigrMidR$ptID<-c(1:nrow(MigrMidR))
+outMR$ptID<-c(1:nrow(outMR))
 
 outMR$ptID[duplicated(outMR$ptID)]
 outMR<-outMR[!duplicated(outMR$ptID), ]
 
-saveRDS(outMR, '~/Documents/Emilie_project/Git/emilie_nlcaribou/output/MoveHMM/outMR.Rds')
+saveRDS(outMR, '~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/outMR.Rds')
+
+message('=== PREP COMPLETE ===')
 
