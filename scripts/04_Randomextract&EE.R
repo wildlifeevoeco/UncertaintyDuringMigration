@@ -26,7 +26,7 @@ head(Migr)
 ### Migration models
 
 ## Rename columns
-colnames(Migr)<-c("Easting","Northing", "IDYear","Animal_ID","Herd","FixDate","FixTime","Year","Month","JDate",
+colnames(Migr)<-c("Easting","Northing","IDYear","Animal_ID","Herd","FixDate","FixTime","Year","Month","JDate", 
                   "Time","JDateTime","Calved", "Lost","CalvingDate", "LossDate", "NSD","Displace",
                   "MigStartDay","MigEndDay","MigDuration", "PtID","state", "step", "angle", "(Intercept)", "stepRes",
                   "angleRes")
@@ -88,7 +88,7 @@ RandAllMidR<-as.SpatialPoints.ppp(RandAllpppMidR)
 RandCoordsMidR<-coordinates(RandAllMidR)
 
 ##Put the dataframe together (random points)
-RandDataMidR<-data.frame(rpMidR$Animal_ID, rpMidR$IDYear,rpMidR$Herd, rpMidR$FixDate,
+RandDataMidR<-data.frame(rpMidR$IDYear, rpMidR$Animal_ID, rpMidR$Herd, rpMidR$FixDate,
                          rpMidR$FixTime, rpMidR$Year,rpMidR$Month,rpMidR$JDate,
                          RandCoordsMidR,rpMidR$PtID,rpMidR$Time, rpMidR$JDateTime, 
                          rpMidR$NSD,rpMidR$Displace,rpMidR$MigStartDay,rpMidR$MigEndDay,rpMidR$MigDuration, 
@@ -100,39 +100,52 @@ RandDataMidR$Presence<-0
 
 ##Put together matching used data
 colnames(RandDataMidR)
-PresDataMidR<-data.frame(Migr$Easting,Migr$Northing,Migr$IDYear,
+colnames(Migr)
+PresDataMidR<-data.frame(Migr$IDYear,
                          Migr$Animal_ID,Migr$Herd,Migr$FixDate,
-                         Migr$FixTime,Migr$Year,Migr$Month,Migr$JDate,Migr$Time,
+                         Migr$FixTime,Migr$Year,Migr$Month,Migr$JDate,Migr$Easting,Migr$Northing,
+                         Migr$Time,
                          Migr$JDateTime, Migr$NSD,Migr$Displace,Migr$MigStartDay,
                          Migr$MigEndDay,Migr$MigDuration,Migr$PtID,
                          Migr$state,Migr$step, 
-                         Migr$angle, Migr$`(Intercept)`, Migr$stepRes, Migr$angleRes)
+                         Migr$angle, Migr$stepRes, Migr$angleRes)
 
+colnames(PresDataMidR)
 ##Set Presence to 1
 PresDataMidR$Presence<-1
 
 ## Make column names
-ColNames<-c("Easting","Northing", "IDYear","Animal_ID","Herd","FixDate","FixTime","Year","Month","JDate",
-            "Time","JDateTime", "NSD","Displace",
-            "MigStartDay","MigEndDay","MigDuration", "PtID","state", "step", "angle", "(Intercept)", "stepRes",
-            "angleRes")
+ColNames<-c("IDYear","Animal_ID","Herd","FixDate","FixTime","Year","Month","JDate",
+            "Easting","Northing","Time","JDateTime", "NSD","Displace",
+            "MigStartDay","MigEndDay","MigDuration", "PtID","state", "step", "angle", "stepRes",
+            "angleRes", "Presence")
 
 ## Set column names for true and random data
 colnames(RandDataMidR)<-ColNames
 colnames(PresDataMidR)<-ColNames
 
+head(RandDataMidR)
+head(PresDataMidR)
+
 ### Dataset that includes all random locations...no spatial data yet though
 
+cols.num <- c("IDYear","Animal_ID", "Herd", "FixDate", "FixTime")
+RandDataMidR[cols.num] <- sapply(RandDataMidR[cols.num],as.character)
+sapply(RandDataMidR, class)
+
+cols.num <- c("IDYear","Animal_ID", "Herd", "FixDate", "FixTime")
+PresDataMidR[cols.num] <- sapply(PresDataMidR[cols.num],as.character)
+sapply(PresDataMidR, class)
+
 ## Put used and random points together
-PresDataMidR = subset(PresDataMidR, select = -c(25))
+# PresDataMidR = subset(PresDataMidR, select = -c(25))
 DataNewMidR<-rbind(PresDataMidR,RandDataMidR)
 
 ## New Point ID field (old pt ID field = "strata" field)
 DataNewMidR$ptID<-c(1:nrow(DataNewMidR))
 DataSortMidR<-DataNewMidR[order(DataNewMidR$JDate),]
 
-
-saveRDS(DataSortMidR, "~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/RSFdata_MigrationMR.RDS")
+# saveRDS(DataSortMidR, "~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/Randoms_data_MigrationMR.RDS")
 
 
 
@@ -140,38 +153,30 @@ saveRDS(DataSortMidR, "~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/RS
 ################################################################
 
 ## Read in water raster
-Water<-raster("/Internship 2019 Mun/Git/emilie_nlcaribou/input/Landcover/Water.tif")
+Water<-raster("C:/Users/emitn/Documents/MUN MSc/Caribou_fitness_project/Input/Landcover/Water.tif")
 
 DataSortMidR$IsWater<-extract(Water,data.frame(DataSortMidR$Easting,DataSortMidR$Northing))
+
 ## Exclude points that fall in water
 DataSortMidR<-subset(DataSortMidR,IsWater==0)
 
 #######Save file with obs/randoms pts##########
 # summary(DataSortMidR)
 names(DataSortMidR)[24]<-"Randoms"
-saveRDS(DataSortMidR, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/RandomPoints/RSFMigrationMRfinal.RDS")
+saveRDS(DataSortMidR, "~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/Randoms_data_MigrationMR.RDS")
 
-
-RSFMigrationMRfinal <- readRDS("~/Internship 2019 Mun/Git/emilie_nlcaribou/output/RandomPoints/RSFMigrationMRfinal.RDS")
 
 #####subset data by random and obs points separately ########3
-RSFMigrationMRfinal$Randoms <- as.factor(RSFMigrationMRfinal$Randoms)
-Randoms<-subset(RSFMigrationMRfinal, Randoms != "1")
-Observed<-subset(RSFMigrationMRfinal, Randoms == "1")
-saveRDS(Randoms, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/RandomPoints/Randoms.RDS")
-saveRDS(Observed, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/RandomPoints/Observed.RDS")
+DataSortMidR$Randoms <- as.factor(DataSortMidR$Randoms)
+Randoms<-subset(DataSortMidR, Randoms != "1")
+Observed<-subset(DataSortMidR, Randoms == "1")
+saveRDS(Randoms, "~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/Randoms_MR_mig.RDS")
+saveRDS(Observed, "~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/Observed_MR_mig.RDS")
 
-write.csv2(Randoms, "~/Internship 2019 Mun/Git/emilie_nlcaribou/output/Randoms.csv")
-write.csv2(Observed, "~/Internship 2019 Mun/Git/emilie_nlcaribou/output/Observed.csv")
-
-data.table::fwrite(Observed, 'Observed.csv')
-data.table::fwrite(Randoms, 'Randoms.csv')
+write.csv2(Randoms, "~/Internship 2019 Mun/Git/emilie_nlcaribou/output/Randoms_MR_mig.csv")
+write.csv2(Observed, "~/Internship 2019 Mun/Git/emilie_nlcaribou/output/Observed_MR_mig.csv")
 
 
-####### Finally number of pts in the study with 30 individuals #####
-numloc <- Observed %>%
-  group_by(Year)%>%
-  summarise(total.fixes = n())
 
 ############ PREPARE DATA FOR EARTH ENGINE EXTRACTION########
 #############################################################
