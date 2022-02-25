@@ -72,3 +72,7 @@ input/Migration_mapper_App_Input/Midridge_herd_MM_App.dbf
 input/Migration_mapper_App_Input/Midridge_herd_MM_App.prj
 input/Migration_mapper_App_Input/Midridge_herd_MM_App.shp
 input/Migration_mapper_App_Input/Midridge_herd_MM_App.shx
+input/Landcover/
+scripts/6-caribou-coyote-k-fold.R
+scripts/functions/
+.RDataTmp
