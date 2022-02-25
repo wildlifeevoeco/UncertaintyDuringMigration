@@ -286,24 +286,24 @@ sd(Rho_random_individuals)
 #############K-fold extraction with best model RSF (Global with Habitat/Weather interaction)##########
 formula<-cbind(Randoms,PtID)~ NDVISc + sweSc + tmaxSc + prcpSc + LichenSc + WetlandSc + ForestSc + RockySc + WaterSc + LichenSc:sweSc + WetlandSc:sweSc + RockySc:sweSc + prcpSc:ForestSc  + prcpSc:WetlandSc + tmaxSc:LichenSc + tmaxSc:WetlandSc + tmaxSc:RockySc + NDVISc:tmaxSc
 
+formula <- cbind(Randoms, PtID)~ Open_200Sc + Lichen_200Sc + Forest_200Sc + tmaxSc +
+  sweSc + prcpSc + Open_200Sc:tmaxSc + Open_200Sc:sweSc +
+  Open_200Sc:prcpSc + Lichen_200Sc:tmaxSc + Lichen_200Sc:sweSc + Lichen_200Sc:prcpSc +
+  Forest_200Sc:sweSc + Forest_200Sc:tmaxSc + Forest_200Sc:prcpSc
 
-head(allNDVI_stop)
-data<-allNDVI_stop
+data <- Final_MR_migration_RSF_stop
 
-data$Animal_ID<-droplevels(data$Animal_ID)
+# data$Animal_ID<-droplevels(data$Animal_ID)
 data$prcpSc<-scale(data$prcp)
 data$tmaxSc<-scale(data$tmax)
 data$sweSc<-scale(data$swe)
-data$NDVISc<-scale(data$NDVI)
-data$WetlandSc<-scale(data$Wetland)
-data$ForestSc<-scale(data$Forest)
-data$LichenSc<-scale(data$Lichen)
-data$RockySc<-scale(data$Rocky)
-data$WaterSc<-scale(data$Water)
+data$Open_200Sc<-scale(data$Open_200)
+data$Lichen_200Sc<-scale(data$Lichen_200)
+data$Forest_200Sc<-scale(data$Forest_200)
 
 data <- subset(data, select = -c(13:18,22:23, 25:27, 33:35))
 data <- subset(data, select = -c(4:5,17:30))
-
+colnames(data)
 ## PART 7 - Model evaluation sensu Boyce et al. 2002 - Individual block cross-validation
 ## -------------------------------------------------------------------------------------
 ##
@@ -354,141 +354,126 @@ data$RSFscores <- NULL
 # NOTE THE ATTACH COMMAND HERE - DETACH BELOW
 attach(data)
 
-data$RSFscores[rand.vec == 1] = exp(coef(mod_inter_randomIND1)[1] * data$NDVISc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[2] * data$sweSc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[3] * data$tmaxSc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[4] * data$prcpSc[rand.vec == 1] + 
-                                      coef(mod_inter_randomIND1)[5] * data$LichenSc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[6] * data$WetlandSc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[7] * data$ForestSc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[8] * data$RockySc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[9] * data$WaterSc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[10] * data$LichenSc[rand.vec == 1] * 
+data$RSFscores[rand.vec == 1] = exp(coef(mod_inter_randomIND1)[1] * data$Open_200Sc[rand.vec == 1]+
+                                      coef(mod_inter_randomIND1)[2] * data$Lichen_200Sc[rand.vec == 1]+
+                                      coef(mod_inter_randomIND1)[3] * data$Forest_200Sc[rand.vec == 1]+
+                                      coef(mod_inter_randomIND1)[4] * data$tmaxSc[rand.vec == 1] + 
+                                      coef(mod_inter_randomIND1)[5] * data$sweSc[rand.vec == 1]+
+                                      coef(mod_inter_randomIND1)[6] * data$prcpSc[rand.vec == 1]+
+                                      coef(mod_inter_randomIND1)[7] * data$Open_200Sc[rand.vec == 1] * 
+                                      data$tmaxSc[rand.vec == 1] +
+                                      coef(mod_inter_randomIND1)[8] * data$Open_200Sc[rand.vec == 1] * 
                                       data$sweSc[rand.vec == 1] +
-                                      coef(mod_inter_randomIND1)[11] * data$WetlandSc[rand.vec == 1] * 
+                                      coef(mod_inter_randomIND1)[9] * data$Open_200Sc[rand.vec == 1] *
+                                      data$prcpSc[rand.vec == 1] +
+                                      coef(mod_inter_randomIND1)[10] * data$Lichen_200Sc[rand.vec == 1] * 
+                                      data$tmaxSc[rand.vec == 1] +
+                                      coef(mod_inter_randomIND1)[11] * data$Lichen_200Sc[rand.vec == 1] *
                                       data$sweSc[rand.vec == 1] +
-                                      coef(mod_inter_randomIND1)[12] * data$RockySc[rand.vec == 1] *
-                                      data$sweSc[rand.vec == 1] +
-                                      coef(mod_inter_randomIND1)[13] * data$prcpSc[rand.vec == 1] * 
-                                      data$ForestSc[rand.vec == 1] +
-                                      coef(mod_inter_randomIND1)[14] * data$prcpSc[rand.vec == 1] *
-                                      data$WetlandSc[rand.vec == 1] +
-                                      coef(mod_inter_randomIND1)[15] * data$tmaxSc[rand.vec == 1] *
-                                      data$LichenSc[rand.vec == 1] + 
-                                      coef(mod_inter_randomIND1)[16] * data$tmaxSc[rand.vec == 1] *
-                                      data$WetlandSc[rand.vec == 1] + 
-                                      coef(mod_inter_randomIND1)[17] * data$tmaxSc[rand.vec == 1] *
-                                      data$RockySc[rand.vec == 1] + 
-                                      coef(mod_inter_randomIND1)[18] * data$NDVISc[rand.vec == 1] *
-                                      data$tmaxSc[rand.vec == 1])
-data$RSFscores[rand.vec == 2] = exp(coef(mod_inter_randomIND1)[1] * data$NDVISc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[2] * data$sweSc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[3] * data$tmaxSc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[4] * data$prcpSc[rand.vec == 2] + 
-                                      coef(mod_inter_randomIND1)[5] * data$LichenSc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[6] * data$WetlandSc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[7] * data$ForestSc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[8] * data$RockySc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[9] * data$WaterSc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[10] * data$LichenSc[rand.vec == 2] * 
+                                      coef(mod_inter_randomIND1)[12] * data$Lichen_200Sc[rand.vec == 1] *
+                                      data$prcpSc[rand.vec == 1] + 
+                                      coef(mod_inter_randomIND1)[13] * data$Forest_200Sc[rand.vec == 1] *
+                                      data$sweSc[rand.vec == 1] + 
+                                      coef(mod_inter_randomIND1)[14] * data$Forest_200Sc[rand.vec == 1] *
+                                      data$tmaxSc[rand.vec == 1] + 
+                                      coef(mod_inter_randomIND1)[15] * data$Forest_200Sc[rand.vec == 1] *
+                                      data$prcpSc[rand.vec == 1])
+data$RSFscores[rand.vec == 2] = exp(coef(mod_inter_randomIND2)[1] * data$Open_200Sc[rand.vec == 2]+
+                                      coef(mod_inter_randomIND2)[2] * data$Lichen_200Sc[rand.vec == 2]+
+                                      coef(mod_inter_randomIND2)[3] * data$Forest_200Sc[rand.vec == 2]+
+                                      coef(mod_inter_randomIND2)[4] * data$tmaxSc[rand.vec == 2] + 
+                                      coef(mod_inter_randomIND2)[5] * data$sweSc[rand.vec == 2]+
+                                      coef(mod_inter_randomIND2)[6] * data$prcpSc[rand.vec == 2]+
+                                      coef(mod_inter_randomIND2)[7] * data$Open_200Sc[rand.vec == 2] * 
+                                      data$tmaxSc[rand.vec == 2] +
+                                      coef(mod_inter_randomIND2)[8] * data$Open_200Sc[rand.vec == 2] * 
                                       data$sweSc[rand.vec == 2] +
-                                      coef(mod_inter_randomIND1)[11] * data$WetlandSc[rand.vec == 2] * 
+                                      coef(mod_inter_randomIND2)[9] * data$Open_200Sc[rand.vec == 2] *
+                                      data$prcpSc[rand.vec == 2] +
+                                      coef(mod_inter_randomIND2)[10] * data$Lichen_200Sc[rand.vec == 2] * 
+                                      data$tmaxSc[rand.vec == 2] +
+                                      coef(mod_inter_randomIND2)[11] * data$Lichen_200Sc[rand.vec == 2] *
                                       data$sweSc[rand.vec == 2] +
-                                      coef(mod_inter_randomIND1)[12] * data$RockySc[rand.vec == 2] *
-                                      data$sweSc[rand.vec == 2] +
-                                      coef(mod_inter_randomIND1)[13] * data$prcpSc[rand.vec == 2] * 
-                                      data$ForestSc[rand.vec == 2] +
-                                      coef(mod_inter_randomIND1)[14] * data$prcpSc[rand.vec == 2] *
-                                      data$WetlandSc[rand.vec == 2] +
-                                      coef(mod_inter_randomIND1)[15] * data$tmaxSc[rand.vec == 2] *
-                                      data$LichenSc[rand.vec == 2] + 
-                                      coef(mod_inter_randomIND1)[16] * data$tmaxSc[rand.vec == 2] *
-                                      data$WetlandSc[rand.vec == 2] + 
-                                      coef(mod_inter_randomIND1)[17] * data$tmaxSc[rand.vec == 2] *
-                                      data$RockySc[rand.vec == 2] + 
-                                      coef(mod_inter_randomIND1)[18] * data$NDVISc[rand.vec == 2] *
-                                      data$tmaxSc[rand.vec == 2])
-data$RSFscores[rand.vec == 3] = exp(coef(mod_inter_randomIND1)[1] * data$NDVISc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[2] * data$sweSc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[3] * data$tmaxSc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[4] * data$prcpSc[rand.vec == 3] + 
-                                      coef(mod_inter_randomIND1)[5] * data$LichenSc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[6] * data$WetlandSc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[7] * data$ForestSc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[8] * data$RockySc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[9] * data$WaterSc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[10] * data$LichenSc[rand.vec == 3] * 
+                                      coef(mod_inter_randomIND2)[12] * data$Lichen_200Sc[rand.vec == 2] *
+                                      data$prcpSc[rand.vec == 2] + 
+                                      coef(mod_inter_randomIND2)[13] * data$Forest_200Sc[rand.vec == 2] *
+                                      data$sweSc[rand.vec == 2] + 
+                                      coef(mod_inter_randomIND2)[14] * data$Forest_200Sc[rand.vec == 2] *
+                                      data$tmaxSc[rand.vec == 2] + 
+                                      coef(mod_inter_randomIND2)[15] * data$Forest_200Sc[rand.vec == 2] *
+                                      data$prcpSc[rand.vec == 2])
+data$RSFscores[rand.vec == 3] = exp(coef(mod_inter_randomIND3)[1] * data$Open_200Sc[rand.vec == 3]+
+                                      coef(mod_inter_randomIND3)[2] * data$Lichen_200Sc[rand.vec == 3]+
+                                      coef(mod_inter_randomIND3)[3] * data$Forest_200Sc[rand.vec == 3]+
+                                      coef(mod_inter_randomIND3)[4] * data$tmaxSc[rand.vec == 3] + 
+                                      coef(mod_inter_randomIND3)[5] * data$sweSc[rand.vec == 3]+
+                                      coef(mod_inter_randomIND3)[6] * data$prcpSc[rand.vec == 3]+
+                                      coef(mod_inter_randomIND3)[7] * data$Open_200Sc[rand.vec == 3] * 
+                                      data$tmaxSc[rand.vec == 3] +
+                                      coef(mod_inter_randomIND3)[8] * data$Open_200Sc[rand.vec == 3] * 
                                       data$sweSc[rand.vec == 3] +
-                                      coef(mod_inter_randomIND1)[11] * data$WetlandSc[rand.vec == 3] * 
+                                      coef(mod_inter_randomIND3)[9] * data$Open_200Sc[rand.vec == 3] *
+                                      data$prcpSc[rand.vec == 3] +
+                                      coef(mod_inter_randomIND3)[10] * data$Lichen_200Sc[rand.vec == 3] * 
+                                      data$tmaxSc[rand.vec == 3] +
+                                      coef(mod_inter_randomIND3)[11] * data$Lichen_200Sc[rand.vec == 3] *
                                       data$sweSc[rand.vec == 3] +
-                                      coef(mod_inter_randomIND1)[12] * data$RockySc[rand.vec == 3] *
-                                      data$sweSc[rand.vec == 3] +
-                                      coef(mod_inter_randomIND1)[13] * data$prcpSc[rand.vec == 3] * 
-                                      data$ForestSc[rand.vec == 3] +
-                                      coef(mod_inter_randomIND1)[14] * data$prcpSc[rand.vec == 3] *
-                                      data$WetlandSc[rand.vec == 3] +
-                                      coef(mod_inter_randomIND1)[15] * data$tmaxSc[rand.vec == 3] *
-                                      data$LichenSc[rand.vec == 3] + 
-                                      coef(mod_inter_randomIND1)[16] * data$tmaxSc[rand.vec == 3] *
-                                      data$WetlandSc[rand.vec == 3] + 
-                                      coef(mod_inter_randomIND1)[17] * data$tmaxSc[rand.vec == 3] *
-                                      data$RockySc[rand.vec == 3] + 
-                                      coef(mod_inter_randomIND1)[18] * data$NDVISc[rand.vec == 3] *
-                                      data$tmaxSc[rand.vec == 3])
-data$RSFscores[rand.vec == 4] = exp(coef(mod_inter_randomIND1)[1] * data$NDVISc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[2] * data$sweSc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[3] * data$tmaxSc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[4] * data$prcpSc[rand.vec == 4] + 
-                                      coef(mod_inter_randomIND1)[5] * data$LichenSc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[6] * data$WetlandSc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[7] * data$ForestSc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[8] * data$RockySc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[9] * data$WaterSc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[10] * data$LichenSc[rand.vec == 4] * 
+                                      coef(mod_inter_randomIND3)[12] * data$Lichen_200Sc[rand.vec == 3] *
+                                      data$prcpSc[rand.vec == 3] + 
+                                      coef(mod_inter_randomIND3)[13] * data$Forest_200Sc[rand.vec == 3] *
+                                      data$sweSc[rand.vec == 3] + 
+                                      coef(mod_inter_randomIND3)[14] * data$Forest_200Sc[rand.vec == 3] *
+                                      data$tmaxSc[rand.vec == 3] + 
+                                      coef(mod_inter_randomIND3)[15] * data$Forest_200Sc[rand.vec == 3] *
+                                      data$prcpSc[rand.vec == 3])
+data$RSFscores[rand.vec == 4] = exp(coef(mod_inter_randomIND4)[1] * data$Open_200Sc[rand.vec == 4]+
+                                      coef(mod_inter_randomIND4)[2] * data$Lichen_200Sc[rand.vec == 4]+
+                                      coef(mod_inter_randomIND4)[3] * data$Forest_200Sc[rand.vec == 4]+
+                                      coef(mod_inter_randomIND4)[4] * data$tmaxSc[rand.vec == 4] + 
+                                      coef(mod_inter_randomIND4)[5] * data$sweSc[rand.vec == 4]+
+                                      coef(mod_inter_randomIND4)[6] * data$prcpSc[rand.vec == 4]+
+                                      coef(mod_inter_randomIND4)[7] * data$Open_200Sc[rand.vec == 4] * 
+                                      data$tmaxSc[rand.vec == 4] +
+                                      coef(mod_inter_randomIND4)[8] * data$Open_200Sc[rand.vec == 4] * 
                                       data$sweSc[rand.vec == 4] +
-                                      coef(mod_inter_randomIND1)[11] * data$WetlandSc[rand.vec == 4] * 
+                                      coef(mod_inter_randomIND4)[9] * data$Open_200Sc[rand.vec == 4] *
+                                      data$prcpSc[rand.vec == 4] +
+                                      coef(mod_inter_randomIND4)[10] * data$Lichen_200Sc[rand.vec == 4] * 
+                                      data$tmaxSc[rand.vec == 4] +
+                                      coef(mod_inter_randomIND4)[11] * data$Lichen_200Sc[rand.vec == 4] *
                                       data$sweSc[rand.vec == 4] +
-                                      coef(mod_inter_randomIND1)[12] * data$RockySc[rand.vec == 4] *
-                                      data$sweSc[rand.vec == 4] +
-                                      coef(mod_inter_randomIND1)[13] * data$prcpSc[rand.vec == 4] * 
-                                      data$ForestSc[rand.vec == 4] +
-                                      coef(mod_inter_randomIND1)[14] * data$prcpSc[rand.vec == 4] *
-                                      data$WetlandSc[rand.vec == 4] +
-                                      coef(mod_inter_randomIND1)[15] * data$tmaxSc[rand.vec == 4] *
-                                      data$LichenSc[rand.vec == 4] + 
-                                      coef(mod_inter_randomIND1)[16] * data$tmaxSc[rand.vec == 4] *
-                                      data$WetlandSc[rand.vec == 4] + 
-                                      coef(mod_inter_randomIND1)[17] * data$tmaxSc[rand.vec == 4] *
-                                      data$RockySc[rand.vec == 4] + 
-                                      coef(mod_inter_randomIND1)[18] * data$NDVISc[rand.vec == 4] *
-                                      data$tmaxSc[rand.vec == 4])
-data$RSFscores[rand.vec == 5] = exp(coef(mod_inter_randomIND1)[1] * data$NDVISc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[2] * data$sweSc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[3] * data$tmaxSc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[4] * data$prcpSc[rand.vec == 5] + 
-                                      coef(mod_inter_randomIND1)[5] * data$LichenSc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[6] * data$WetlandSc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[7] * data$ForestSc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[8] * data$RockySc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[9] * data$WaterSc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[10] * data$LichenSc[rand.vec == 5] * 
+                                      coef(mod_inter_randomIND4)[12] * data$Lichen_200Sc[rand.vec == 4] *
+                                      data$prcpSc[rand.vec == 4] + 
+                                      coef(mod_inter_randomIND4)[13] * data$Forest_200Sc[rand.vec == 4] *
+                                      data$sweSc[rand.vec == 4] + 
+                                      coef(mod_inter_randomIND4)[14] * data$Forest_200Sc[rand.vec == 4] *
+                                      data$tmaxSc[rand.vec == 4] + 
+                                      coef(mod_inter_randomIND4)[15] * data$Forest_200Sc[rand.vec == 4] *
+                                      data$prcpSc[rand.vec == 4])
+data$RSFscores[rand.vec == 5] = exp(coef(mod_inter_randomIND5)[1] * data$Open_200Sc[rand.vec == 5]+
+                                      coef(mod_inter_randomIND5)[2] * data$Lichen_200Sc[rand.vec == 5]+
+                                      coef(mod_inter_randomIND5)[3] * data$Forest_200Sc[rand.vec == 5]+
+                                      coef(mod_inter_randomIND5)[4] * data$tmaxSc[rand.vec == 5] + 
+                                      coef(mod_inter_randomIND5)[5] * data$sweSc[rand.vec == 5]+
+                                      coef(mod_inter_randomIND5)[6] * data$prcpSc[rand.vec == 5]+
+                                      coef(mod_inter_randomIND5)[7] * data$Open_200Sc[rand.vec == 5] * 
+                                      data$tmaxSc[rand.vec == 5] +
+                                      coef(mod_inter_randomIND5)[8] * data$Open_200Sc[rand.vec == 5] * 
                                       data$sweSc[rand.vec == 5] +
-                                      coef(mod_inter_randomIND1)[11] * data$WetlandSc[rand.vec == 5] * 
+                                      coef(mod_inter_randomIND5)[9] * data$Open_200Sc[rand.vec == 5] *
+                                      data$prcpSc[rand.vec == 5] +
+                                      coef(mod_inter_randomIND5)[10] * data$Lichen_200Sc[rand.vec == 5] * 
+                                      data$tmaxSc[rand.vec == 5] +
+                                      coef(mod_inter_randomIND5)[11] * data$Lichen_200Sc[rand.vec == 5] *
                                       data$sweSc[rand.vec == 5] +
-                                      coef(mod_inter_randomIND1)[12] * data$RockySc[rand.vec == 5] *
-                                      data$sweSc[rand.vec == 5] +
-                                      coef(mod_inter_randomIND1)[13] * data$prcpSc[rand.vec == 5] * 
-                                      data$ForestSc[rand.vec == 5] +
-                                      coef(mod_inter_randomIND1)[14] * data$prcpSc[rand.vec == 5] *
-                                      data$WetlandSc[rand.vec == 5] +
-                                      coef(mod_inter_randomIND1)[15] * data$tmaxSc[rand.vec == 5] *
-                                      data$LichenSc[rand.vec == 5] + 
-                                      coef(mod_inter_randomIND1)[16] * data$tmaxSc[rand.vec == 5] *
-                                      data$WetlandSc[rand.vec == 5] + 
-                                      coef(mod_inter_randomIND1)[17] * data$tmaxSc[rand.vec == 5] *
-                                      data$RockySc[rand.vec == 5] + 
-                                      coef(mod_inter_randomIND1)[18] * data$NDVISc[rand.vec == 5] *
-                                      data$tmaxSc[rand.vec == 5])
+                                      coef(mod_inter_randomIND5)[12] * data$Lichen_200Sc[rand.vec == 5] *
+                                      data$prcpSc[rand.vec == 5] + 
+                                      coef(mod_inter_randomIND5)[13] * data$Forest_200Sc[rand.vec == 5] *
+                                      data$sweSc[rand.vec == 5] + 
+                                      coef(mod_inter_randomIND5)[14] * data$Forest_200Sc[rand.vec == 5] *
+                                      data$tmaxSc[rand.vec == 5] + 
+                                      coef(mod_inter_randomIND5)[15] * data$Forest_200Sc[rand.vec == 5] *
+                                      data$prcpSc[rand.vec == 5])
 
 
 
@@ -524,7 +509,7 @@ rho_model[1] <- with(a,cor.test(bins,areaadjusted,method="spearm"))$estimate ## 
 # --------------------------------------------------------
 
 # Run the procedure for the other folds and plot the binned RSF scores from the cross-validation
-png("graphics/KfoldRSFstop.png", height=360, width=600)
+png("output/tables/KfoldRSFstop.png", height=360, width=600)
 
 par(oma=c(1,2,1,1)) 
 par(mar=c(4.2,4.2,2,2))
@@ -564,35 +549,30 @@ dev.off()
 ## store Spearman correlation coefficients that will be used for final plots below ##
 Rho_random_individuals <- rho_model
 
-mean(Rho_random_individuals)
-sd(Rho_random_individuals)
+mean(Rho_random_individuals) ####0.7963636
+sd(Rho_random_individuals)#### 0.1524577
 
 ######################################################################################################
 ######################################################################################################
 #############K-fold extraction with best model RSF MOVEMENT (Global with Habitat/Weather interaction)##########
-formula<-cbind(Randoms,PtID)~ NDVISc + sweSc + tmaxSc + prcpSc + LichenSc +
-  WetlandSc + ForestSc + RockySc + WaterSc + sweSc:WetlandSc +
-  prcpSc:RockySc + tmaxSc:ForestSc + tmaxSc:LichenSc + tmaxSc:WetlandSc +
-  prcpSc:sweSc + NDVISc:tmaxSc
+formula <- cbind(Randoms, PtID)~ Open_200Sc + Lichen_200Sc + Forest_200Sc + tmaxSc +
+  sweSc + prcpSc + Open_200Sc:tmaxSc + Open_200Sc:sweSc +
+  Open_200Sc:prcpSc + Lichen_200Sc:tmaxSc + Lichen_200Sc:sweSc + Lichen_200Sc:prcpSc +
+  Forest_200Sc:sweSc + Forest_200Sc:tmaxSc + Forest_200Sc:prcpSc
 
+data <- Final_MR_migration_RSF_mvt
 
-head(allNDVI_mvt)
-data<-allNDVI_mvt
-
-data$Animal_ID<-droplevels(data$Animal_ID)
+# data$Animal_ID<-droplevels(data$Animal_ID)
 data$prcpSc<-scale(data$prcp)
 data$tmaxSc<-scale(data$tmax)
 data$sweSc<-scale(data$swe)
-data$NDVISc<-scale(data$NDVI)
-data$WetlandSc<-scale(data$Wetland)
-data$ForestSc<-scale(data$Forest)
-data$LichenSc<-scale(data$Lichen)
-data$RockySc<-scale(data$Rocky)
-data$WaterSc<-scale(data$Water)
+data$Open_200Sc<-scale(data$Open_200)
+data$Lichen_200Sc<-scale(data$Lichen_200)
+data$Forest_200Sc<-scale(data$Forest_200)
 
 data <- subset(data, select = -c(13:18,22:23, 25:27, 33:35))
 data <- subset(data, select = -c(4:5,17:30))
-
+colnames(data)
 ## PART 7 - Model evaluation sensu Boyce et al. 2002 - Individual block cross-validation
 ## -------------------------------------------------------------------------------------
 ##
@@ -643,121 +623,126 @@ data$RSFscores <- NULL
 # NOTE THE ATTACH COMMAND HERE - DETACH BELOW
 attach(data)
 
-data$RSFscores[rand.vec == 1] = exp(coef(mod_inter_randomIND1)[1] * data$NDVISc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[2] * data$sweSc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[3] * data$tmaxSc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[4] * data$prcpSc[rand.vec == 1] + 
-                                      coef(mod_inter_randomIND1)[5] * data$LichenSc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[6] * data$WetlandSc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[7] * data$ForestSc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[8] * data$RockySc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[9] * data$WaterSc[rand.vec == 1]+
-                                      coef(mod_inter_randomIND1)[10] * data$WetlandSc[rand.vec == 1] * 
+data$RSFscores[rand.vec == 1] = exp(coef(mod_inter_randomIND1)[1] * data$Open_200Sc[rand.vec == 1]+
+                                      coef(mod_inter_randomIND1)[2] * data$Lichen_200Sc[rand.vec == 1]+
+                                      coef(mod_inter_randomIND1)[3] * data$Forest_200Sc[rand.vec == 1]+
+                                      coef(mod_inter_randomIND1)[4] * data$tmaxSc[rand.vec == 1] + 
+                                      coef(mod_inter_randomIND1)[5] * data$sweSc[rand.vec == 1]+
+                                      coef(mod_inter_randomIND1)[6] * data$prcpSc[rand.vec == 1]+
+                                      coef(mod_inter_randomIND1)[7] * data$Open_200Sc[rand.vec == 1] * 
+                                      data$tmaxSc[rand.vec == 1] +
+                                      coef(mod_inter_randomIND1)[8] * data$Open_200Sc[rand.vec == 1] * 
                                       data$sweSc[rand.vec == 1] +
-                                      coef(mod_inter_randomIND1)[11] * data$prcpSc[rand.vec == 1] *
-                                      data$RockySc[rand.vec == 1] +
-                                      coef(mod_inter_randomIND1)[12] * data$tmaxSc[rand.vec == 1] * 
-                                      data$ForestSc[rand.vec == 1] +
-                                      coef(mod_inter_randomIND1)[13] * data$tmaxSc[rand.vec == 1] *
-                                      data$LichenSc[rand.vec == 1] +
-                                      coef(mod_inter_randomIND1)[14] * data$tmaxSc[rand.vec == 1] *
-                                      data$WetlandSc[rand.vec == 1] + 
-                                      coef(mod_inter_randomIND1)[15] * data$sweSc[rand.vec == 1] *
+                                      coef(mod_inter_randomIND1)[9] * data$Open_200Sc[rand.vec == 1] *
+                                      data$prcpSc[rand.vec == 1] +
+                                      coef(mod_inter_randomIND1)[10] * data$Lichen_200Sc[rand.vec == 1] * 
+                                      data$tmaxSc[rand.vec == 1] +
+                                      coef(mod_inter_randomIND1)[11] * data$Lichen_200Sc[rand.vec == 1] *
+                                      data$sweSc[rand.vec == 1] +
+                                      coef(mod_inter_randomIND1)[12] * data$Lichen_200Sc[rand.vec == 1] *
                                       data$prcpSc[rand.vec == 1] + 
-                                      coef(mod_inter_randomIND1)[16] * data$NDVISc[rand.vec == 1] *
-                                      data$tmaxSc[rand.vec == 1])
-data$RSFscores[rand.vec == 2] = exp(coef(mod_inter_randomIND1)[1] * data$NDVISc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[2] * data$sweSc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[3] * data$tmaxSc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[4] * data$prcpSc[rand.vec == 2] + 
-                                      coef(mod_inter_randomIND1)[5] * data$LichenSc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[6] * data$WetlandSc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[7] * data$ForestSc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[8] * data$RockySc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[9] * data$WaterSc[rand.vec == 2]+
-                                      coef(mod_inter_randomIND1)[10] * data$WetlandSc[rand.vec == 2] * 
+                                      coef(mod_inter_randomIND1)[13] * data$Forest_200Sc[rand.vec == 1] *
+                                      data$sweSc[rand.vec == 1] + 
+                                      coef(mod_inter_randomIND1)[14] * data$Forest_200Sc[rand.vec == 1] *
+                                      data$tmaxSc[rand.vec == 1] + 
+                                      coef(mod_inter_randomIND1)[15] * data$Forest_200Sc[rand.vec == 1] *
+                                      data$prcpSc[rand.vec == 1])
+data$RSFscores[rand.vec == 2] = exp(coef(mod_inter_randomIND2)[1] * data$Open_200Sc[rand.vec == 2]+
+                                      coef(mod_inter_randomIND2)[2] * data$Lichen_200Sc[rand.vec == 2]+
+                                      coef(mod_inter_randomIND2)[3] * data$Forest_200Sc[rand.vec == 2]+
+                                      coef(mod_inter_randomIND2)[4] * data$tmaxSc[rand.vec == 2] + 
+                                      coef(mod_inter_randomIND2)[5] * data$sweSc[rand.vec == 2]+
+                                      coef(mod_inter_randomIND2)[6] * data$prcpSc[rand.vec == 2]+
+                                      coef(mod_inter_randomIND2)[7] * data$Open_200Sc[rand.vec == 2] * 
+                                      data$tmaxSc[rand.vec == 2] +
+                                      coef(mod_inter_randomIND2)[8] * data$Open_200Sc[rand.vec == 2] * 
                                       data$sweSc[rand.vec == 2] +
-                                      coef(mod_inter_randomIND1)[11] * data$prcpSc[rand.vec == 2] *
-                                      data$RockySc[rand.vec == 2] +
-                                      coef(mod_inter_randomIND1)[12] * data$tmaxSc[rand.vec == 2] * 
-                                      data$ForestSc[rand.vec == 2] +
-                                      coef(mod_inter_randomIND1)[13] * data$tmaxSc[rand.vec == 2] *
-                                      data$LichenSc[rand.vec == 2] +
-                                      coef(mod_inter_randomIND1)[14] * data$tmaxSc[rand.vec == 2] *
-                                      data$WetlandSc[rand.vec == 2] + 
-                                      coef(mod_inter_randomIND1)[15] * data$sweSc[rand.vec == 2] *
+                                      coef(mod_inter_randomIND2)[9] * data$Open_200Sc[rand.vec == 2] *
+                                      data$prcpSc[rand.vec == 2] +
+                                      coef(mod_inter_randomIND2)[10] * data$Lichen_200Sc[rand.vec == 2] * 
+                                      data$tmaxSc[rand.vec == 2] +
+                                      coef(mod_inter_randomIND2)[11] * data$Lichen_200Sc[rand.vec == 2] *
+                                      data$sweSc[rand.vec == 2] +
+                                      coef(mod_inter_randomIND2)[12] * data$Lichen_200Sc[rand.vec == 2] *
                                       data$prcpSc[rand.vec == 2] + 
-                                      coef(mod_inter_randomIND1)[16] * data$NDVISc[rand.vec == 2] *
-                                      data$tmaxSc[rand.vec == 2])
-data$RSFscores[rand.vec == 3] = exp(coef(mod_inter_randomIND1)[1] * data$NDVISc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[2] * data$sweSc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[3] * data$tmaxSc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[4] * data$prcpSc[rand.vec == 3] + 
-                                      coef(mod_inter_randomIND1)[5] * data$LichenSc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[6] * data$WetlandSc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[7] * data$ForestSc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[8] * data$RockySc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[9] * data$WaterSc[rand.vec == 3]+
-                                      coef(mod_inter_randomIND1)[10] * data$WetlandSc[rand.vec == 3] * 
+                                      coef(mod_inter_randomIND2)[13] * data$Forest_200Sc[rand.vec == 2] *
+                                      data$sweSc[rand.vec == 2] + 
+                                      coef(mod_inter_randomIND2)[14] * data$Forest_200Sc[rand.vec == 2] *
+                                      data$tmaxSc[rand.vec == 2] + 
+                                      coef(mod_inter_randomIND2)[15] * data$Forest_200Sc[rand.vec == 2] *
+                                      data$prcpSc[rand.vec == 2])
+data$RSFscores[rand.vec == 3] = exp(coef(mod_inter_randomIND3)[1] * data$Open_200Sc[rand.vec == 3]+
+                                      coef(mod_inter_randomIND3)[2] * data$Lichen_200Sc[rand.vec == 3]+
+                                      coef(mod_inter_randomIND3)[3] * data$Forest_200Sc[rand.vec == 3]+
+                                      coef(mod_inter_randomIND3)[4] * data$tmaxSc[rand.vec == 3] + 
+                                      coef(mod_inter_randomIND3)[5] * data$sweSc[rand.vec == 3]+
+                                      coef(mod_inter_randomIND3)[6] * data$prcpSc[rand.vec == 3]+
+                                      coef(mod_inter_randomIND3)[7] * data$Open_200Sc[rand.vec == 3] * 
+                                      data$tmaxSc[rand.vec == 3] +
+                                      coef(mod_inter_randomIND3)[8] * data$Open_200Sc[rand.vec == 3] * 
                                       data$sweSc[rand.vec == 3] +
-                                      coef(mod_inter_randomIND1)[11] * data$prcpSc[rand.vec == 3] *
-                                      data$RockySc[rand.vec == 3] +
-                                      coef(mod_inter_randomIND1)[12] * data$tmaxSc[rand.vec == 3] * 
-                                      data$ForestSc[rand.vec == 3] +
-                                      coef(mod_inter_randomIND1)[13] * data$tmaxSc[rand.vec == 3] *
-                                      data$LichenSc[rand.vec == 3] +
-                                      coef(mod_inter_randomIND1)[14] * data$tmaxSc[rand.vec == 3] *
-                                      data$WetlandSc[rand.vec == 3] + 
-                                      coef(mod_inter_randomIND1)[15] * data$sweSc[rand.vec == 3] *
+                                      coef(mod_inter_randomIND3)[9] * data$Open_200Sc[rand.vec == 3] *
+                                      data$prcpSc[rand.vec == 3] +
+                                      coef(mod_inter_randomIND3)[10] * data$Lichen_200Sc[rand.vec == 3] * 
+                                      data$tmaxSc[rand.vec == 3] +
+                                      coef(mod_inter_randomIND3)[11] * data$Lichen_200Sc[rand.vec == 3] *
+                                      data$sweSc[rand.vec == 3] +
+                                      coef(mod_inter_randomIND3)[12] * data$Lichen_200Sc[rand.vec == 3] *
                                       data$prcpSc[rand.vec == 3] + 
-                                      coef(mod_inter_randomIND1)[16] * data$NDVISc[rand.vec == 3] *
-                                      data$tmaxSc[rand.vec == 3])
-data$RSFscores[rand.vec == 4] = exp(coef(mod_inter_randomIND1)[1] * data$NDVISc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[2] * data$sweSc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[3] * data$tmaxSc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[4] * data$prcpSc[rand.vec == 4] + 
-                                      coef(mod_inter_randomIND1)[5] * data$LichenSc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[6] * data$WetlandSc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[7] * data$ForestSc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[8] * data$RockySc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[9] * data$WaterSc[rand.vec == 4]+
-                                      coef(mod_inter_randomIND1)[10] * data$WetlandSc[rand.vec == 4] * 
+                                      coef(mod_inter_randomIND3)[13] * data$Forest_200Sc[rand.vec == 3] *
+                                      data$sweSc[rand.vec == 3] + 
+                                      coef(mod_inter_randomIND3)[14] * data$Forest_200Sc[rand.vec == 3] *
+                                      data$tmaxSc[rand.vec == 3] + 
+                                      coef(mod_inter_randomIND3)[15] * data$Forest_200Sc[rand.vec == 3] *
+                                      data$prcpSc[rand.vec == 3])
+data$RSFscores[rand.vec == 4] = exp(coef(mod_inter_randomIND4)[1] * data$Open_200Sc[rand.vec == 4]+
+                                      coef(mod_inter_randomIND4)[2] * data$Lichen_200Sc[rand.vec == 4]+
+                                      coef(mod_inter_randomIND4)[3] * data$Forest_200Sc[rand.vec == 4]+
+                                      coef(mod_inter_randomIND4)[4] * data$tmaxSc[rand.vec == 4] + 
+                                      coef(mod_inter_randomIND4)[5] * data$sweSc[rand.vec == 4]+
+                                      coef(mod_inter_randomIND4)[6] * data$prcpSc[rand.vec == 4]+
+                                      coef(mod_inter_randomIND4)[7] * data$Open_200Sc[rand.vec == 4] * 
+                                      data$tmaxSc[rand.vec == 4] +
+                                      coef(mod_inter_randomIND4)[8] * data$Open_200Sc[rand.vec == 4] * 
                                       data$sweSc[rand.vec == 4] +
-                                      coef(mod_inter_randomIND1)[11] * data$prcpSc[rand.vec == 4] *
-                                      data$RockySc[rand.vec == 4] +
-                                      coef(mod_inter_randomIND1)[12] * data$tmaxSc[rand.vec == 4] * 
-                                      data$ForestSc[rand.vec == 4] +
-                                      coef(mod_inter_randomIND1)[13] * data$tmaxSc[rand.vec == 4] *
-                                      data$LichenSc[rand.vec == 4] +
-                                      coef(mod_inter_randomIND1)[14] * data$tmaxSc[rand.vec == 4] *
-                                      data$WetlandSc[rand.vec == 4] + 
-                                      coef(mod_inter_randomIND1)[15] * data$sweSc[rand.vec == 4] *
+                                      coef(mod_inter_randomIND4)[9] * data$Open_200Sc[rand.vec == 4] *
+                                      data$prcpSc[rand.vec == 4] +
+                                      coef(mod_inter_randomIND4)[10] * data$Lichen_200Sc[rand.vec == 4] * 
+                                      data$tmaxSc[rand.vec == 4] +
+                                      coef(mod_inter_randomIND4)[11] * data$Lichen_200Sc[rand.vec == 4] *
+                                      data$sweSc[rand.vec == 4] +
+                                      coef(mod_inter_randomIND4)[12] * data$Lichen_200Sc[rand.vec == 4] *
                                       data$prcpSc[rand.vec == 4] + 
-                                      coef(mod_inter_randomIND1)[16] * data$NDVISc[rand.vec == 4] *
-                                      data$tmaxSc[rand.vec == 4])
-data$RSFscores[rand.vec == 5] = exp(coef(mod_inter_randomIND1)[1] * data$NDVISc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[2] * data$sweSc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[3] * data$tmaxSc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[4] * data$prcpSc[rand.vec == 5] + 
-                                      coef(mod_inter_randomIND1)[5] * data$LichenSc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[6] * data$WetlandSc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[7] * data$ForestSc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[8] * data$RockySc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[9] * data$WaterSc[rand.vec == 5]+
-                                      coef(mod_inter_randomIND1)[10] * data$WetlandSc[rand.vec == 5] * 
+                                      coef(mod_inter_randomIND4)[13] * data$Forest_200Sc[rand.vec == 4] *
+                                      data$sweSc[rand.vec == 4] + 
+                                      coef(mod_inter_randomIND4)[14] * data$Forest_200Sc[rand.vec == 4] *
+                                      data$tmaxSc[rand.vec == 4] + 
+                                      coef(mod_inter_randomIND4)[15] * data$Forest_200Sc[rand.vec == 4] *
+                                      data$prcpSc[rand.vec == 4])
+data$RSFscores[rand.vec == 5] = exp(coef(mod_inter_randomIND5)[1] * data$Open_200Sc[rand.vec == 5]+
+                                      coef(mod_inter_randomIND5)[2] * data$Lichen_200Sc[rand.vec == 5]+
+                                      coef(mod_inter_randomIND5)[3] * data$Forest_200Sc[rand.vec == 5]+
+                                      coef(mod_inter_randomIND5)[4] * data$tmaxSc[rand.vec == 5] + 
+                                      coef(mod_inter_randomIND5)[5] * data$sweSc[rand.vec == 5]+
+                                      coef(mod_inter_randomIND5)[6] * data$prcpSc[rand.vec == 5]+
+                                      coef(mod_inter_randomIND5)[7] * data$Open_200Sc[rand.vec == 5] * 
+                                      data$tmaxSc[rand.vec == 5] +
+                                      coef(mod_inter_randomIND5)[8] * data$Open_200Sc[rand.vec == 5] * 
                                       data$sweSc[rand.vec == 5] +
-                                      coef(mod_inter_randomIND1)[11] * data$prcpSc[rand.vec == 5] *
-                                      data$RockySc[rand.vec == 5] +
-                                      coef(mod_inter_randomIND1)[12] * data$tmaxSc[rand.vec == 5] * 
-                                      data$ForestSc[rand.vec == 5] +
-                                      coef(mod_inter_randomIND1)[13] * data$tmaxSc[rand.vec == 5] *
-                                      data$LichenSc[rand.vec == 5] +
-                                      coef(mod_inter_randomIND1)[14] * data$tmaxSc[rand.vec == 5] *
-                                      data$WetlandSc[rand.vec == 5] + 
-                                      coef(mod_inter_randomIND1)[15] * data$sweSc[rand.vec == 5] *
+                                      coef(mod_inter_randomIND5)[9] * data$Open_200Sc[rand.vec == 5] *
+                                      data$prcpSc[rand.vec == 5] +
+                                      coef(mod_inter_randomIND5)[10] * data$Lichen_200Sc[rand.vec == 5] * 
+                                      data$tmaxSc[rand.vec == 5] +
+                                      coef(mod_inter_randomIND5)[11] * data$Lichen_200Sc[rand.vec == 5] *
+                                      data$sweSc[rand.vec == 5] +
+                                      coef(mod_inter_randomIND5)[12] * data$Lichen_200Sc[rand.vec == 5] *
                                       data$prcpSc[rand.vec == 5] + 
-                                      coef(mod_inter_randomIND1)[16] * data$NDVISc[rand.vec == 5] *
-                                      data$tmaxSc[rand.vec == 5])
+                                      coef(mod_inter_randomIND5)[13] * data$Forest_200Sc[rand.vec == 5] *
+                                      data$sweSc[rand.vec == 5] + 
+                                      coef(mod_inter_randomIND5)[14] * data$Forest_200Sc[rand.vec == 5] *
+                                      data$tmaxSc[rand.vec == 5] + 
+                                      coef(mod_inter_randomIND5)[15] * data$Forest_200Sc[rand.vec == 5] *
+                                      data$prcpSc[rand.vec == 5])
 
 
 
@@ -793,7 +778,7 @@ rho_model[1] <- with(a,cor.test(bins,areaadjusted,method="spearm"))$estimate ## 
 # --------------------------------------------------------
 
 # Run the procedure for the other folds and plot the binned RSF scores from the cross-validation
-png("graphics/KfoldRSFmvt.png", height=360, width=600)
+png("output/tables/KfoldRSFstop.png", height=360, width=600)
 
 par(oma=c(1,2,1,1)) 
 par(mar=c(4.2,4.2,2,2))
@@ -833,5 +818,5 @@ dev.off()
 ## store Spearman correlation coefficients that will be used for final plots below ##
 Rho_random_individuals <- rho_model
 
-mean(Rho_random_individuals)
-sd(Rho_random_individuals)
+mean(Rho_random_individuals) ####0.3421835
+sd(Rho_random_individuals)#### 0.1962041

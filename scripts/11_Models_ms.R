@@ -5,7 +5,7 @@
 
 libs <- c('data.table', 'magrittr','dplyr', 'lubridate', 'lme4', 'mclogit', 'performance', 'ggeffects',
           'tidyr', 'ggplot2','survival', 'patchwork', 'ggthemes', 'data.table',
-          'sjmisc', 'car', 'sjPlot', 'broom', 'paletteer', 'MuMIn')
+          'sjmisc', 'car', 'sjPlot', 'broom', 'paletteer', 'MuMIn', 'scales')
 lapply(libs, require, character.only = TRUE)
 
 ## ##### First analysis : GLMM MODELS ### 
@@ -34,25 +34,20 @@ mycolors <- c(paletteer_d("colorblindr::OkabeIto"))
 mycolors <- mycolors[c(1,3)] 
 
 colScale <- scale_colour_manual(name = "state",values = mycolors)
-
+cols <- c("1"="#E69F00FF","2"="#009E73FF")
 ###Plot step distribution
-a <- ggplot(Final_MR_migration_obs, aes(x = step)) +
+a <- ggplot(Final_MR_migration_obs %>% subset (step <= 5000), aes(x = step)) +
   geom_density(aes(color = state), alpha = 0.5, size = 1.2) +
-  theme_classic(base_size = 14) + 
-   theme(
-     legend.position="none") +
-  xlab('Step length') + ylab('Density') + colScale
+  theme_classic(base_size = 14)  +scale_colour_manual(guide="none", values=cols) +
+  xlab('Step length (m)') + ylab('Density') 
 
 ## Plot angle distribution 
 b <- ggplot(Final_MR_migration_obs, aes(x = angle)) +
   geom_density(aes(color = state), alpha = 0.5, size = 1.2) +
-  theme_classic(base_size = 14) + theme(
-  legend.position = c(.98, .97),
-  legend.justification = c("right", "top"),
-  legend.box.just = "right",
-  legend.margin = margin(6, 6, 6, 6)
-) +
-  xlab('Angle') + ylab('Density') + colScale
+  theme_classic(base_size = 14) +
+  scale_colour_manual(name="State", 
+                      labels = c("Encamped", "Movement"),values=cols) +
+  xlab('Angle (radians)') + ylab('') 
 
 ###Bind plot together and save them
 ##individually
@@ -72,9 +67,15 @@ save_plot("plot_Fig1.pdf", plot_Fig1,
           ncol = 2, # we're saving a grid plot of 2 columns
           nrow = 1, # and 2 rows
           # each individual subplot should have an aspect ratio of 1.3
-          base_aspect_ratio = 1
+          base_aspect_ratio = 1.3
 )
 
+save_plot("plot_Fig1.png", plot_Fig1,
+          ncol = 2, # we're saving a grid plot of 2 columns
+          nrow = 1, # and 2 rows
+          # each individual subplot should have an aspect ratio of 1.3
+          base_aspect_ratio = 1.3
+)
 ##### Distribution of landcover variable #### Fig S1 ####
 
 c <- ggplot(Final_MR_migration_obs, aes(x= state, y = Lichen_200)) +
@@ -362,31 +363,49 @@ stargazer(M1_all_inter, type = "html",
 # sjPlot::plot_model(M1_inter)
 
 ###plot effects####
-##### Interaction plot between Lichen/temp####
-predict_df_lichen_temp <- ggpredict(
-  M1_all_inter,
-  terms = c("Open_sc", "tmax_sc")
-)
-
-
 ##### Interaction plot between Forest/temp####
 predict_df_forest_temp <- ggpredict(
   M1_all_inter,
-  terms = c("Forest_sc", "tmax_sc")
+  terms = c("Forest_sc[all]", "tmax_sc")
 )
+
+##### Interaction plot between Lichen/temp####
+predict_df_lichen_temp <- ggpredict(
+  M1_all_inter,
+  terms = c("Lichen_sc[all]", "tmax_sc")
+)
+
+##### Interaction plot between Lichen/temp####
+predict_df_open_temp <- ggpredict(
+  M1_all_inter,
+  terms = c("Open_sc[all]", "tmax_sc")
+)
+
+##### Interaction plot between Lichen/snow####
+predict_df_lichen_snow <- ggpredict(
+  M1_all_inter,
+  terms = c("Lichen_sc[all]", "swe_sc")
+)
+
+
+##### Interaction plot between Forest/prcp####
+predict_df_forest_prcp <- ggpredict(
+  M1_all_inter,
+  terms = c("Forest_sc[all]", "prcp_sc"))
+
+
+##### Interaction plot between Open/prcp####
+predict_df_open_prcp <- ggpredict(
+  M1_all_inter,
+  terms = c("Open_sc[all]", "prcp_sc"))
+
+
 
 #### Plot interactions#### 
 ###unscaled labels#
-print(min_max_forest)
-#> [1] 32.1 59.6
-unscaled_labels_forest <- breaks_pretty()(seq(0, 1))
-# *** HERE ***
+unscaled_proportion_labels <- breaks_pretty()(seq(0, 1))
 
-unscaled_labels_forest <- breaks_pretty()(seq(min_max_forest[1], min_max_forest[2], 0.05))
-unscaled_labels_lichen <- breaks_pretty()(seq(min_max_lichen[1], min_max_lichen[2], 0.05))
-unscaled_labels_open <- breaks_pretty()(seq(min_max_open[1], min_max_open[2], 0.05))
-
-
+####
 unscaled_labels_temp <- breaks_pretty(2)(seq(min_max_temp[1], min_max_temp[2]))
 unscaled_labels_temp <- as.character(unscaled_labels_temp)
 unscaled_labels_swe <- breaks_pretty(1)(seq(min_max_swe[1], min_max_swe[2]))
@@ -395,32 +414,169 @@ unscaled_labels_prcp <- breaks_pretty(1)(seq(min_max_prcp[1], min_max_prcp[2]))
 unscaled_labels_prcp <- as.character(unscaled_labels_prcp)
 
 # Generate the corresponding scaled breaks, from the saved scaling attributes
-scaled_breaks_forest <-  scale(unscaled_labels_forest, scale_attributes_forest$`scaled:center`, scale_attributes_forest$`scaled:scale`)
-scaled_breaks_lichen <-  scale(unscaled_labels_lichen, scale_attributes_lichen$`scaled:center`, scale_attributes_lichen$`scaled:scale`)
-scaled_breaks_open <-  scale(unscaled_labels_forest, scale_attributes_open$`scaled:center`, scale_attributes_open$`scaled:scale`)
-
+scaled_breaks_forest <-  scale(unscaled_proportion_labels, scale_attributes_forest$`scaled:center`, scale_attributes_forest$`scaled:scale`)
+scaled_breaks_open <-  scale(unscaled_proportion_labels, scale_attributes_open$`scaled:center`, scale_attributes_open$`scaled:scale`)
+scaled_breaks_lichen <-  scale(unscaled_proportion_labels, scale_attributes_lichen$`scaled:center`, scale_attributes_lichen$`scaled:scale`)
 
 ####Plot####
-###Lichen/temp
-ggplot(predict_df_lichen_temp %>% subset (x <= 4 & x >=0 ), aes(x, predicted, fill = group)) +
-  geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of lichen") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_forest, breaks = scaled_breaks_forest) +
-  scale_linetype_discrete(name = "Temperature", labels = unscaled_labels_temp)+
-  scale_fill_manual(name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp)
-
 ###Forest/temp
-ggplot(predict_df_forest_temp, aes(x, predicted, fill = group)) +
+a <- ggplot(predict_df_forest_temp, aes(x, predicted, fill = group)) +
   geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of forest") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_forest, breaks = scaled_breaks_forest,
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) +theme_classic() +
+  theme(axis.text.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))+
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_forest,
                      limits = c(min(scaled_breaks_forest), max(scaled_breaks_forest))) +
-  scale_linetype_discrete(name = "Temperature", labels = unscaled_labels_temp)+
-  scale_fill_manual(name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp)
+  scale_linetype_discrete(name = "Temperature", labels = unscaled_labels_temp, guide="none")+
+  scale_fill_manual(guide="none", name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp) +
+  xlab ("") + ylab("Relative probability of selection")
 
 
+###Lichen/temp
+b <- ggplot(predict_df_lichen_temp, aes(x, predicted, fill = group)) +
+  geom_line(aes(linetype = group), size = 0.8) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) + theme_classic() +
+  theme(legend.position =  c("none"),
+        axis.text.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20))+
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_lichen,
+                     limits = c(min(scaled_breaks_lichen), max(scaled_breaks_lichen))) +
+  scale_linetype_discrete( name = "Temperature", labels = unscaled_labels_temp)+
+  scale_fill_manual( name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp)+
+  xlab ("") + ylab("")
+
+ba <- b + theme(legend.position =  c("top"),
+                       legend.box = "horizontal",
+                legend.title = element_text(size=20),
+                legend.text = element_text(size=18))
+
+###Open/temp
+c <- ggplot(predict_df_open_temp, aes(x, predicted, fill = group)) +
+  geom_line(aes(linetype = group), size = 0.8) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) +theme_classic() +
+  theme(
+    legend.title.align = 0.5,
+    legend.position = c(.98, .98),
+    legend.justification = c("right", "top"),
+    legend.box.just = "top",
+    legend.margin = margin(6, 6, 6, 6),
+    legend.title = element_text(size=20),
+    legend.text = element_text(size=20),
+    axis.text.y = element_text(size = 20),
+    axis.text.x = element_text(size = 20)
+  ) +
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_open,
+                     limits = c(min(scaled_breaks_open), max(scaled_breaks_open))) +
+  scale_linetype_discrete(guide="none", name = "Temperature", labels = unscaled_labels_temp)+
+  scale_fill_manual(guide="none", name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp)+
+    xlab ("") + ylab("")
+
+
+###Forest/prcp
+d <- ggplot(predict_df_forest_prcp, aes(x, predicted, fill = group)) +
+  geom_line(aes(linetype = group), size = 0.8) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)   + theme_classic() +
+  theme(
+         legend.title.align = 0.5,
+         legend.position = c(.3, 1.07),
+         legend.justification = c("right", "top"),
+         legend.box.just = "right",
+         legend.margin = margin(6, 6, 6, 6),
+         legend.title = element_text(size=20),
+         legend.text = element_text(size=20),
+         axis.text.y = element_text(size = 20),
+         axis.text.x = element_text(size = 20),
+         axis.title.y = element_text(size = 20),
+         axis.title.x = element_text(size = 20)
+       )+ 
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_forest,
+                     limits = c(min(scaled_breaks_forest), max(scaled_breaks_forest))) +
+  scale_linetype_discrete(name = "Precipitation", labels = unscaled_labels_prcp)+
+  scale_fill_manual(name = "Precipitation", values=c("#666666", "#3399FF", "#0000FF"),labels = unscaled_labels_prcp)+
+   xlab ("Proportion of forest") + ylab("Relative probability of selection")
+
+###Lichen/snow
+e <- ggplot(predict_df_lichen_swe, aes(x, predicted, fill = group)) +
+  geom_line(aes(linetype = group), size = 0.8) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) +theme_classic()+
+  theme(
+    legend.title.align = 0.5,
+    legend.position = c(.3, 1.07),
+    legend.justification = c("right", "top"),
+    legend.box.just = "right",
+    legend.margin = margin(6, 6, 6, 6),
+    legend.title = element_text(size=20),
+    legend.text = element_text(size=20),
+    axis.text.y = element_text(size = 20),
+    axis.text.x = element_text(size = 20),
+    axis.title.x = element_text(size = 20)
+    
+  ) +
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_lichen,
+                     limits = c(min(scaled_breaks_lichen), max(scaled_breaks_lichen))) +
+  scale_linetype_discrete(name = "Snow water \n equivalent", labels = unscaled_labels_swe)+
+  scale_fill_manual(name = "Snow water \n equivalent", values=c("blue", "#999999", "red"),labels = unscaled_labels_swe)+
+  xlab ("Proportion of lichen") + ylab("")
+
+
+###Open/prcp
+f <- ggplot(predict_df_open_prcp, aes(x, predicted, fill = group)) +
+  geom_line(aes(linetype = group), size = 0.8) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) +theme_classic()+
+  theme(
+    legend.title.align = 0.5,
+    legend.position = c(.32, 1.07),
+    legend.justification = c("right", "top"),
+    legend.box.just = "right",
+    legend.margin = margin(6, 6, 6, 6),
+    legend.title = element_text(size=20),
+    legend.text = element_text(size=20),
+    axis.text.y = element_text(size = 20),
+    axis.text.x = element_text(size = 20),
+    axis.title.x = element_text(size = 20)
+  ) +
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_open,
+                     limits = c(min(scaled_breaks_open), max(scaled_breaks_open))) +
+  scale_linetype_discrete(name = "Precipitation", labels = unscaled_labels_prcp)+
+  scale_fill_manual(name = "Precipitation", values=c("#666666", "#3399FF", "#0000FF"),labels = unscaled_labels_prcp) +
+    xlab ("Proportion of open") + ylab("")
+
+####
+legend <- get_legend(
+  # create some space to the left of the legend
+  ba 
+)
+
+###save figure
+pgrid <- plot_grid(a,b,c,d,e,f, align ='vh', hjust = -1,
+                       labels = c("A"), 
+                       ncol = 3, nrow=2, label_size = 35)
+
+plot <- pgrid + draw_grob(legend, x =  0.0111, y =  0.480, scale = 0.020)
+
+# plot_Fig4.A <- plot_grid(pgrid, legend)
+# title <- ggdraw() + draw_label("Behavioural state", fontface='bold')
+# 
+# plot_Fig4.A <- plot_grid(plot_Fig4.A, ncol=1) # rel_heights values control title margins
+
+save_plot("plot_Fig4.A.pdf", plot,
+          ncol = 3, # we're saving a grid plot of 2 columns
+          nrow = 2, # and 2 rows
+          # each individual subplot should have an aspect ratio of 1.3
+           base_asp = 1
+)
+
+save_plot("plot_Fig4.A.png", plot,
+          ncol = 3, # we're saving a grid plot of 2 columns
+          nrow = 3, # and 2 rows
+          # each individual subplot should have an aspect ratio of 1.3
+          # base_aspect_ratio = 1
+          base_asp = 2
+          # base_width = 6
+)
+
+####Plot####
 
 
 
@@ -564,13 +720,22 @@ logLik(modelmeteo_RSF_stop)
 ###avec interaction hab + meteo _ stopover #####
 ###create tab with all variable scaled###
 RSF_stop_df_scaled <- Final_MR_migration_RSF_stop[c(1,11,24,28,30,31,45:47)]
-RSF_stop_df_scaled[c(10:15)] <- scale(RSF_stop_df_scaled[c(4:9)])
+# RSF_stop_df_scaled[c(10:15)] <- scale(RSF_stop_df_scaled[c(4:9)])
 RSF_stop_df_scaled$prcp_sc <- scale(RSF_stop_df_scaled$prcp)
 RSF_stop_df_scaled$swe_sc <- scale(RSF_stop_df_scaled$swe)
 RSF_stop_df_scaled$tmax_sc <- scale(RSF_stop_df_scaled$tmax)
 RSF_stop_df_scaled$Lichen_sc <- scale(RSF_stop_df_scaled$Lichen_200)
 RSF_stop_df_scaled$Open_sc <- scale(RSF_stop_df_scaled$Open_200)
 RSF_stop_df_scaled$Forest_sc <- scale(RSF_stop_df_scaled$Forest_200)
+
+###as numeric
+RSF_stop_df_scaled$prcp_sc <- as.numeric(RSF_stop_df_scaled$prcp_sc)
+RSF_stop_df_scaled$swe_sc <- as.numeric(RSF_stop_df_scaled$swe_sc)
+RSF_stop_df_scaled$tmax_sc <- as.numeric(RSF_stop_df_scaled$tmax_sc)
+RSF_stop_df_scaled$Lichen_sc <- as.numeric(RSF_stop_df_scaled$Lichen_sc)
+RSF_stop_df_scaled$Open_sc <- as.numeric(RSF_stop_df_scaled$Open_sc)
+RSF_stop_df_scaled$Forest_sc <- as.numeric(RSF_stop_df_scaled$Forest_sc)
+
 
 setDT(RSF_stop_df_scaled)
 
@@ -598,11 +763,11 @@ min_max_prcp <- RSF_stop_df_scaled[, c(min(prcp, na.rm = TRUE),
                                        max(prcp, na.rm = TRUE))]
 
 ####model RSF stop####
-# model_interact_RSF_stop <- mclogit(cbind(Randoms, PtID)~ Open_sc + Lichen_sc + Forest_sc + tmax_sc +
-#                                      swe_sc+ prcp_sc + Open_sc*tmax_sc + Open_sc*swe_sc +
-#                                      Open_sc*prcp_sc + Lichen_sc*tmax_sc + Lichen_sc*swe_sc + Lichen_sc*prcp_sc +
-#                                      Forest_sc*tmax_sc + Forest_sc*swe_sc + Forest_sc*prcp_sc, data = RSF_stop_df_scaled)
-# 
+ model_interact_RSF_stop <- mclogit(cbind(Randoms, PtID)~ Open_sc + Lichen_sc + Forest_sc + tmax_sc +
+                                      swe_sc+ prcp_sc + Open_sc*tmax_sc + Open_sc*swe_sc +
+                                      Open_sc*prcp_sc + Lichen_sc*tmax_sc + Lichen_sc*swe_sc + Lichen_sc*prcp_sc +
+                                      Forest_sc*tmax_sc + Forest_sc*swe_sc + Forest_sc*prcp_sc, data = RSF_stop_df_scaled)
+ 
 
 summary(model_interact_RSF_stop)
 logLik(model_interact_RSF_stop)
@@ -644,81 +809,73 @@ r + theme_sjplot()
 ##test with ggpredict function
 predict_df <- ggpredict(
   model_interact_RSF_stop,
-  terms = c("Forest_sc", "tmax_sc")
+  terms = c("Forest_sc[all]", "tmax_sc")
 )
-
 
 #### test conversion scaled - unscaled ####
 
-predict_df$Forest_sc <- predict_df$x
+# predict_df$Forest_sc <- predict_df$x
 
-str(predict_df$group)
-options(digits=2)
-predict_df$tmax_sc <- as.numeric(as.character(predict_df$group))
-str(predict_df$tmax_sc)
+# str(predict_df$group)
+# options(digits=2)
+# predict_df$tmax_sc <- as.numeric(as.character(predict_df$group))
+# str(predict_df$tmax_sc)
 
-predict_df$Forest_200 <- unscale_after_predict(predict_df, RSF_stop_df_scaled, 'Forest_sc')
-print(unscale_after_predict(predict_df, RSF_stop_df_scaled, 'Forest_sc'))
-
-levels(cut(RSF_stop_df_scaled$Forest_200, 5))
-
-range(RSF_stop_df_scaled$Forest_200)
-
-predict_df$tmax <- unscale_after_predict(predict_df, RSF_stop_df_scaled, 'tmax_sc')
-
-range(RSF_stop_df_scaled$tmax)
-
-predict_df$tmax <- as.numeric(predict_df$tmax)
-options(digits = 2)
-
-predict_df$tmax <- format(predict_df$tmax, digits = 2)
+# predict_df$Forest_200 <- unscale_after_predict(predict_df, RSF_stop_df_scaled, 'Forest_sc')
+# print(unscale_after_predict(predict_df, RSF_stop_df_scaled, 'Forest_sc'))
+# 
+# levels(cut(RSF_stop_df_scaled$Forest_200, 5))
+# 
+# range(RSF_stop_df_scaled$Forest_200)
+# 
+# predict_df$tmax <- unscale_after_predict(predict_df, RSF_stop_df_scaled, 'tmax_sc')
+# 
+# range(RSF_stop_df_scaled$tmax)
+# 
+# predict_df$tmax <- as.numeric(predict_df$tmax)
+# options(digits = 2)
+# 
+# predict_df$tmax <- format(predict_df$tmax, digits = 2)
 
 
 #### interaction plot between lichen and tmax ####
 predict_df_lichen_temp <- ggpredict(
   model_interact_RSF_stop,
-  terms = c("Lichen_sc", "tmax_sc")
+  terms = c("Lichen_sc[all]", "tmax_sc")
 )
 
 
 ###### Interaction plot between open / tmax ####
 predict_df_open_temp <- ggpredict(
   model_interact_RSF_stop,
-  terms = c("Open_sc", "tmax_sc")
+  terms = c("Open_sc[all]", "tmax_sc")
 )
 
 ##### Interaction plot between Lichen/snow####
 predict_df_lichen_swe <- ggpredict(
   model_interact_RSF_stop,
-  terms = c("Lichen_sc", "swe_sc")
-)
+  terms = c("Lichen_sc[all]", "swe_sc"))
 
 
 ##### Interaction plot between Forest/prcp####
 predict_df_forest_prcp <- ggpredict(
   model_interact_RSF_stop,
-  terms = c("Forest_sc", "prcp_sc")
-)
+  terms = c("Forest_sc[all]", "prcp_sc"))
 
 
-##### Interaction plot between Forest/prcp####
+##### Interaction plot between Open/prcp####
 predict_df_open_prcp <- ggpredict(
   model_interact_RSF_stop,
-  terms = c("Open_sc", "prcp_sc")
-)
+  terms = c("Open_sc[all]", "prcp_sc"))
 
 
 #### Plot interactions#### 
 ###unscaled labels#
 print(min_max_forest)
 #> [1] 32.1 59.6
-unscaled_labels_forest <- breaks_pretty()(seq(0, 1))
+unscaled_proportion_labels <- breaks_pretty()(seq(0, 1))
 
-# unscaled_labels_forest <- breaks_pretty()(seq(min_max_forest[1], min_max_forest[2], 0.05))
-# unscaled_labels_lichen <- breaks_pretty()(seq(min_max_lichen[1], min_max_lichen[2], 0.05))
-# unscaled_labels_open <- breaks_pretty()(seq(min_max_open[1], min_max_open[2], 0.05))
-
-
+####
 unscaled_labels_temp <- breaks_pretty(2)(seq(min_max_temp[1], min_max_temp[2]))
 unscaled_labels_temp <- as.character(unscaled_labels_temp)
 unscaled_labels_swe <- breaks_pretty(1)(seq(min_max_swe[1], min_max_swe[2]))
@@ -727,97 +884,155 @@ unscaled_labels_prcp <- breaks_pretty(1)(seq(min_max_prcp[1], min_max_prcp[2]))
 unscaled_labels_prcp <- as.character(unscaled_labels_prcp)
 
 # Generate the corresponding scaled breaks, from the saved scaling attributes
-scaled_breaks_forest <-  scale(unscaled_labels_forest, scale_attributes_forest$`scaled:center`, scale_attributes_forest$`scaled:scale`)
-scaled_breaks_lichen <-  scale(unscaled_labels_lichen, scale_attributes_lichen$`scaled:center`, scale_attributes_lichen$`scaled:scale`)
-scaled_breaks_open <-  scale(unscaled_labels_forest, scale_attributes_open$`scaled:center`, scale_attributes_open$`scaled:scale`)
-
+scaled_breaks_forest <-  scale(unscaled_proportion_labels, scale_attributes_forest$`scaled:center`, scale_attributes_forest$`scaled:scale`)
+scaled_breaks_open <-  scale(unscaled_proportion_labels, scale_attributes_open$`scaled:center`, scale_attributes_open$`scaled:scale`)
+scaled_breaks_lichen <-  scale(unscaled_proportion_labels, scale_attributes_lichen$`scaled:center`, scale_attributes_lichen$`scaled:scale`)
 
 ####Plot####
 ###Forest/temp
 a <- ggplot(predict_df, aes(x, predicted, fill = group)) +
   geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of forest") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_forest, breaks = scaled_breaks_forest,
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) +theme_classic() +
+  theme(axis.text.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20)) +
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_forest,
                      limits = c(min(scaled_breaks_forest), max(scaled_breaks_forest))) +
-   scale_linetype_discrete(name = "Temperature", labels = unscaled_labels_temp)+
-   scale_fill_manual(name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp)
+  scale_linetype_discrete(guide = 'none', name = "Temperature", labels = unscaled_labels_temp)+
+  scale_fill_manual(guide = 'none', name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp)+
+  xlab ("") + ylab("Relative probability of selection")
 
-
-ggplot(predict_df, aes(x, predicted, fill = group)) +
-  geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of forest") + ylab("Relative probability of selection") 
-
-head(predict_df)
 
 ###Lichen/temp
-b <- ggplot(predict_df_lichen_temp %>% subset (x <= 4 & x >=0 ), aes(x, predicted, fill = group)) +
+b <- ggplot(predict_df_lichen_temp, aes(x, predicted, fill = group)) +
   geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of lichen") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_forest, breaks = scaled_breaks_forest) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)  +theme_classic() +
+  theme(legend.position = c("none"),
+    axis.text.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))+
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_lichen,
+                     limits = c(min(scaled_breaks_lichen), max(scaled_breaks_lichen))) +
   scale_linetype_discrete(name = "Temperature", labels = unscaled_labels_temp)+
-  scale_fill_manual(name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp)
+  scale_fill_manual(name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp)+
+  xlab ("") + ylab("")
+
+ba <- b + theme(legend.position =  c("top"),
+                legend.box = "horizontal",
+                legend.title = element_text(size=20),
+                legend.text = element_text(size=18))
 
 
 ###Open/temp
-c <- ggplot(predict_df_open_temp %>% subset (x <= 4 & x >=0 ), aes(x, predicted, fill = group)) +
+c <- ggplot(predict_df_open_temp, aes(x, predicted, fill = group)) +
   geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of open") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_forest, breaks = scaled_breaks_forest) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) +theme_classic() +
+  theme(legend.position = c("none"),
+        axis.text.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))+
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_open,
+                     limits = c(min(scaled_breaks_open), max(scaled_breaks_open))) +
   scale_linetype_discrete(name = "Temperature", labels = unscaled_labels_temp)+
-  scale_fill_manual(name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp)
-
-
-###Lichen/snow
-d <- ggplot(predict_df_lichen_swe %>% subset (x <= 4 & x >=0 ), aes(x, predicted, fill = group)) +
-  geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of lichen") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_forest, breaks = scaled_breaks_forest) +
-  scale_linetype_discrete(name = "Snow water \n equivalent", labels = unscaled_labels_swe)+
-  scale_fill_manual(name = "Snow water \n equivalent", values=c("#666666", "#3399FF", "#0000FF"),labels = unscaled_labels_swe)
+  scale_fill_manual(name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp)+  
+    xlab ("") + ylab("")
 
 
 ###Forest/prcp
-e <- ggplot(predict_df_forest_prcp %>% subset (x <= 4 & x >=0 ), aes(x, predicted, fill = group)) +
+d <- ggplot(predict_df_forest_prcp, aes(x, predicted, fill = group)) +
   geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of forest") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_forest, breaks = scaled_breaks_forest) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) +theme_classic() +
+  theme(legend.title.align = 0.5,
+        legend.position = c(.98, 1.07),
+        legend.justification = c("right", "top"),
+        legend.box.just = "right",
+        legend.margin = margin(6, 6, 6, 6),
+        legend.title = element_text(size=20),
+        legend.text = element_text(size=20),
+        axis.text.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20))+
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_forest,
+                     limits = c(min(scaled_breaks_forest), max(scaled_breaks_forest))) +
   scale_linetype_discrete(name = "Precipitation", labels = unscaled_labels_prcp)+
-  scale_fill_manual(name = "Precipitation", values=c("#666666", "#3399FF", "#0000FF"),labels = unscaled_labels_prcp)
+  scale_fill_manual(name = "Precipitation", values=c("#666666", "#3399FF", "#0000FF"),labels = unscaled_labels_prcp)+
+  xlab ("Proportion of forest") + ylab("Relative probability of selection")
+
+
+###Lichen/snow
+e <- ggplot(predict_df_lichen_swe, aes(x, predicted, fill = group)) +
+  geom_line(aes(linetype = group), size = 0.8) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) + theme_classic() +
+  theme(legend.title.align = 0.5,
+        legend.position = c(.3, 1.07),
+        legend.justification = c("right", "top"),
+        legend.box.just = "right",
+        legend.margin = margin(6, 6, 6, 6),
+        legend.title = element_text(size=20),
+        legend.text = element_text(size=20),
+        axis.text.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20))+
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_lichen,
+                     limits = c(min(scaled_breaks_lichen), max(scaled_breaks_lichen))) +
+  scale_linetype_discrete(name = "Snow water \n equivalent", labels = unscaled_labels_swe)+
+  scale_fill_manual(name = "Snow water \n equivalent", values=c("blue", "#999999", "red"),labels = unscaled_labels_swe)+  
+  xlab ("Proportion of lichen") + ylab("")
+
 
 ###Open/prcp
-f <- ggplot(predict_df_open_prcp %>% subset (x <= 4 & x >=0 ), aes(x, predicted, fill = group)) +
+f <- ggplot(predict_df_open_prcp, aes(x, predicted, fill = group)) +
   geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of open") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_open, breaks = scaled_breaks_open) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) + theme_classic() +
+  theme(legend.title.align = 0.5,
+        legend.position = c(.3, 1.07),
+        legend.justification = c("right", "top"),
+        legend.box.just = "right",
+        legend.margin = margin(6, 6, 6, 6),
+        legend.title = element_text(size=20),
+        legend.text = element_text(size=20),
+        axis.text.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20)) +
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_open,
+                     limits = c(min(scaled_breaks_open), max(scaled_breaks_open))) +
   scale_linetype_discrete(name = "Precipitation", labels = unscaled_labels_prcp)+
-  scale_fill_manual(name = "Precipitation", values=c("#666666", "#3399FF", "#0000FF"),labels = unscaled_labels_prcp)
+  scale_fill_manual(name = "Precipitation", values=c("#666666", "#3399FF", "#0000FF"),labels = unscaled_labels_prcp)+  
+  xlab ("Proportion of open") + ylab("")
 
 
-###save figure
-plot_Fig4 <- plot_grid(a,b,c,d,e,f, align = 'hv',
-                       labels = c("A", "B", "C", "D", "E", "F"),
-                       ncol = 3, nrow=3)
+###plot  figure
 
-save_plot("plot_Fig4.pdf", plot_Fig4,
+legend <- get_legend(
+  # create some space to the left of the legend
+  ba 
+)
+pgrid2 <- plot_grid(a,b,c,d,e,f, align ='vh', hjust = -1,
+                   labels = c("B"), 
+                   ncol = 3, nrow=2, label_size = 35)
+
+plot2 <- pgrid2 + draw_grob(legend, x =  0.0111, y =  0.480, scale = 0.020)
+
+###save
+save_plot("plot_Fig4.B.pdf", plot2,
+          ncol = 3, # we're saving a grid plot of 2 columns
+          nrow = 2, # and 2 rows
+          # each individual subplot should have an aspect ratio of 1.3
+          base_asp = 1
+)
+
+save_plot("plot_Fig4.B.png", plot2,
           ncol = 3, # we're saving a grid plot of 2 columns
           nrow = 3, # and 2 rows
           # each individual subplot should have an aspect ratio of 1.3
-          base_aspect_ratio = 1
+          # base_aspect_ratio = 1
+          base_asp = 2
+          # base_width = 6
 )
 
-save_plot("plot_Fig4.png", plot_Fig4,
-          ncol = 3, # we're saving a grid plot of 2 columns
-          nrow = 3, # and 2 rows
-          # each individual subplot should have an aspect ratio of 1.3
-          base_aspect_ratio = 1
-)
 
 ###
 
@@ -903,7 +1118,7 @@ sjPlot::tab_model(modelmeteo_RSF_mvt,
 
 ###create tab with all variable scaled###
 RSF_mvt_df_scaled <- Final_MR_migration_RSF_mvt[c(1,11,24,28,30,31,45:47)]
-RSF_mvt_df_scaled[c(10:15)] <- scale(RSF_mvt_df_scaled[c(4:9)])
+# RSF_mvt_df_scaled[c(10:15)] <- scale(RSF_mvt_df_scaled[c(4:9)])
 RSF_mvt_df_scaled$prcp_sc <- scale(RSF_mvt_df_scaled$prcp)
 RSF_mvt_df_scaled$swe_sc <- scale(RSF_mvt_df_scaled$swe)
 RSF_mvt_df_scaled$tmax_sc <- scale(RSF_mvt_df_scaled$tmax)
@@ -941,6 +1156,7 @@ model_interact_RSF_mvt <- mclogit(cbind(Randoms, PtID)~  Open_sc + Lichen_sc + F
   Open_sc*prcp_sc + Lichen_sc*tmax_sc + Lichen_sc*swe_sc + Lichen_sc*prcp_sc +
   Forest_sc*tmax_sc + Forest_sc*swe_sc + Forest_sc*prcp_sc, data = RSF_mvt_df_scaled)
 
+####summary
 summary(model_interact_RSF_mvt)
 logLik(model_interact_RSF_mvt)
 
@@ -1035,58 +1251,58 @@ save_plot("plot_Fig2.pdf", plot_Fig2,
 
 #### interaction predicted values between lichen and tmax ####
 predict_df_lichen_temp_mvt <- ggpredict(
-  model_interact_RSF_mvt,
-  terms = c("Lichen_sc", "tmax_sc")
+  model_interact_RSF_stop,
+  terms = c("Lichen_sc[all]", "tmax_sc")
 )
 
 #### interaction predicted values between forest and tmax ####
 predict_df_forest_temp_mvt <- ggpredict(
   model_interact_RSF_mvt,
-  terms = c("Forest_sc", "tmax_sc")
+  terms = c("Forest_sc[all]", "tmax_sc")
 )
 
 #### interaction predicted values between open and tmax ####
 predict_df_open_temp_mvt <- ggpredict(
   model_interact_RSF_mvt,
-  terms = c("Open_sc", "tmax_sc")
+  terms = c("Open_sc[all]", "tmax_sc")
 )
 
 
 #### interaction predicted values between lichen and prcp ####
 predict_df_lichen_prcp_mvt <- ggpredict(
   model_interact_RSF_mvt,
-  terms = c("Lichen_sc", "prcp_sc")
+  terms = c("Lichen_sc[all]", "prcp_sc")
 )
 
 
 #### interaction predicted values between forest and prcp ####
 predict_df_forest_prcp_mvt <- ggpredict(
   model_interact_RSF_mvt,
-  terms = c("Forest_sc", "prcp_sc")
+  terms = c("Forest_sc[all]", "prcp_sc")
 )
 
 
 #### interaction predicted values between open and prcp ####
 predict_df_open_prcp_mvt <- ggpredict(
   model_interact_RSF_mvt,
-  terms = c("Open_sc", "prcp_sc")
+  terms = c("Open_sc[all]", "prcp_sc")
 )
 
 #### interaction predicted values between open and swe ####
 predict_df_open_swe_mvt <- ggpredict(
   model_interact_RSF_mvt,
-  terms = c("Open_sc", "swe_sc")
+  terms = c("Open_sc[all]", "swe_sc")
 )
 
 
 #### Plot interactions#### 
 ###unscaled labels#
-unscaled_labels_forest <- breaks_pretty()(seq(min_max_forest[1], min_max_forest[2], 0.05))
-unscaled_labels_lichen <- breaks_pretty()(seq(min_max_lichen[1], min_max_lichen[2], 0.05))
-unscaled_labels_open <- breaks_pretty()(seq(min_max_open[1], min_max_open[2], 0.05))
+print(min_max_forest)
+#> [1] 32.1 59.6
+unscaled_proportion_labels <- breaks_pretty()(seq(0, 1))
 
-
-unscaled_labels_temp <- breaks_pretty(1)(seq(min_max_temp[1], min_max_temp[2]))
+####
+unscaled_labels_temp <- breaks_pretty(2)(seq(min_max_temp[1], min_max_temp[2]))
 unscaled_labels_temp <- as.character(unscaled_labels_temp)
 unscaled_labels_swe <- breaks_pretty(1)(seq(min_max_swe[1], min_max_swe[2]))
 unscaled_labels_swe <- as.character(unscaled_labels_swe)
@@ -1094,76 +1310,170 @@ unscaled_labels_prcp <- breaks_pretty(1)(seq(min_max_prcp[1], min_max_prcp[2]))
 unscaled_labels_prcp <- as.character(unscaled_labels_prcp)
 
 # Generate the corresponding scaled breaks, from the saved scaling attributes
-scaled_breaks_forest <-  scale(unscaled_labels_forest, scale_attributes_forest$`scaled:center`, scale_attributes_forest$`scaled:scale`)
-scaled_breaks_lichen <-  scale(unscaled_labels_lichen, scale_attributes_lichen$`scaled:center`, scale_attributes_lichen$`scaled:scale`)
-scaled_breaks_open <-  scale(unscaled_labels_forest, scale_attributes_open$`scaled:center`, scale_attributes_open$`scaled:scale`)
+scaled_breaks_forest <-  scale(unscaled_proportion_labels, scale_attributes_forest$`scaled:center`, scale_attributes_forest$`scaled:scale`)
+scaled_breaks_open <-  scale(unscaled_proportion_labels, scale_attributes_open$`scaled:center`, scale_attributes_open$`scaled:scale`)
+scaled_breaks_lichen <-  scale(unscaled_proportion_labels, scale_attributes_lichen$`scaled:center`, scale_attributes_lichen$`scaled:scale`)
 
 
 ####Plot####
 ###Forest/temp
-ggplot(predict_df_forest_temp_mvt %>% subset (x <= 4 & x >=0 ), aes(x, predicted, fill = group)) +
+a <- ggplot(predict_df_forest_temp_mvt, aes(x, predicted, fill = group)) +
   geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of forest") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_forest, breaks = scaled_breaks_forest) +
-  scale_linetype_discrete(name = "Temperature", labels = unscaled_labels_temp)+
-  scale_fill_manual(name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp)
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) +theme_classic() +
+  theme(axis.text.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))+
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_forest,
+                     limits = c(min(scaled_breaks_forest), max(scaled_breaks_forest))) +
+  scale_linetype_discrete(guide = "none", name = "Temperature", labels = unscaled_labels_temp)+
+  scale_fill_manual(guide = "none", name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp) +
+  xlab ("") + ylab("Relative probability of selection")
 
 
 ###Lichen/temp
-ggplot(predict_df_lichen_temp_mvt %>% subset (x <= 4 & x >=0 ), aes(x, predicted, fill = group)) +
+b <- ggplot(predict_df_lichen_temp_mvt, aes(x, predicted, fill = group)) +
   geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of lichen") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_forest, breaks = scaled_breaks_forest) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) +theme_classic() +
+  theme(legend.position = c("none"),
+        axis.text.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))+
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_lichen,
+                     limits = c(min(scaled_breaks_lichen), max(scaled_breaks_lichen))) +
   scale_linetype_discrete(name = "Temperature", labels = unscaled_labels_temp)+
-  scale_fill_manual(name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp)
+  scale_fill_manual(name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp) +
+  xlab ("") + ylab("")
+
+ba <- b + theme(legend.position =  c("top"),
+                legend.box = "horizontal",
+                legend.title = element_text(size=20),
+                legend.text = element_text(size=18))
 
 ###Open/temp
-ggplot(predict_df_open_temp_mvt %>% subset (x <= 4 & x >=0 ), aes(x, predicted, fill = group)) +
+c <- ggplot(predict_df_open_temp_mvt, aes(x, predicted, fill = group)) +
   geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of open") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_forest, breaks = scaled_breaks_forest) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) +theme_classic() +
+  theme(legend.position = c("none"),
+        axis.text.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))+
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_open,
+                     limits = c(min(scaled_breaks_open), max(scaled_breaks_open))) +
   scale_linetype_discrete(name = "Temperature", labels = unscaled_labels_temp)+
-  scale_fill_manual(name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp)
+  scale_fill_manual(name = "Temperature", values=c("blue", "#999999", "red"),labels = unscaled_labels_temp)+
+  xlab ("") + ylab("")
 
 
-####Lichen/prcp
-ggplot(predict_df_lichen_prcp_mvt %>% subset (x <= 4 & x >=0 ), aes(x, predicted, fill = group)) +
-  geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of lichen") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_lichen, breaks = scaled_breaks_lichen) +
-  scale_linetype_discrete(name = "Precipitation", labels = unscaled_labels_prcp)+
-  scale_fill_manual(name = "Precipitation", values=c("#666666", "#3399FF", "#0000FF"),labels = unscaled_labels_prcp)
+
 
 ###Forest/prcp
-ggplot(predict_df_forest_prcp_mvt %>% subset (x <= 4 & x >=0 ), aes(x, predicted, fill = group)) +
+d <- ggplot(predict_df_forest_prcp_mvt, aes(x, predicted, fill = group)) +
   geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of forest") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_forest, breaks = scaled_breaks_forest) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) + theme_classic() +
+  theme(legend.title.align = 0.5,
+        legend.position = c(.98, 1.07),
+        legend.justification = c("right", "top"),
+        legend.box.just = "right",
+        legend.margin = margin(6, 6, 6, 6),
+        legend.title = element_text(size=20),
+        legend.text = element_text(size=20),
+        axis.text.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20))+
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_forest,
+                     limits = c(min(scaled_breaks_forest), max(scaled_breaks_forest))) +
   scale_linetype_discrete(name = "Precipitation", labels = unscaled_labels_prcp)+
-  scale_fill_manual(name = "Precipitation", values=c("#666666", "#3399FF", "#0000FF"),labels = unscaled_labels_prcp)
+  scale_fill_manual(name = "Precipitation", values=c("#666666", "#3399FF", "#0000FF"),labels = unscaled_labels_prcp)+
+  xlab ("Proportion of forest") + ylab("Relative probability of selection")
+
+
+###Lichen/prcp
+e <- ggplot(predict_df_lichen_prcp_mvt, aes(x, predicted, fill = group)) +
+  geom_line(aes(linetype = group), size = 0.8) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) +theme_classic() +
+  theme(legend.title.align = 0.5,
+        legend.position = c(.3, 1.07),
+        legend.justification = c("right", "top"),
+        legend.box.just = "right",
+        legend.margin = margin(6, 6, 6, 6),
+        legend.title = element_text(size=20),
+        legend.text = element_text(size=20),
+        axis.text.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20))+
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_lichen,
+                     limits = c(min(scaled_breaks_lichen), max(scaled_breaks_lichen))) +
+  scale_linetype_discrete(name = "Precipitation", labels = unscaled_labels_swe)+
+  scale_fill_manual(name = "Precipitation", values=c("blue", "#999999", "red"),labels = unscaled_labels_swe) +
+  xlab ("Proportion of lichen") + ylab("")
 
 ###Open/prcp
-ggplot(predict_df_open_prcp_mvt %>% subset (x <= 4 & x >=0 ), aes(x, predicted, fill = group)) +
-  geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of open") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_forest, breaks = scaled_breaks_forest) +
-  scale_linetype_discrete(name = "Precipitation", labels = unscaled_labels_prcp)+
-  scale_fill_manual(name = "Precipitation", values=c("#666666", "#3399FF", "#0000FF"),labels = unscaled_labels_prcp)
+# f <- ggplot(predict_df_open_prcp_mvt, aes(x, predicted, fill = group)) +
+#   geom_line(aes(linetype = group), size = 0.8) +
+#   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) +
+#   scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_open,
+#                      limits = c(min(scaled_breaks_open), max(scaled_breaks_open))) +
+#   scale_linetype_discrete(name = "Precipitation", labels = unscaled_labels_prcp)+
+#   scale_fill_manual(name = "Precipitation", values=c("#666666", "#3399FF", "#0000FF"),labels = unscaled_labels_prcp)+
+#   theme_classic() +  xlab ("Proportion of open") + ylab("Relative probability of selection")
+# 
+
 
 ###Open/swe
-ggplot(predict_df_open_swe_mvt, aes(x, predicted, fill = group)) +
+f <- ggplot(predict_df_open_swe_mvt, aes(x, predicted, fill = group)) +
   geom_line(aes(linetype = group), size = 0.8) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2)+
-  theme_classic() + xlab ("Proportion of open") + ylab("Relative probability of selection") +
-  scale_x_continuous(labels = unscaled_labels_forest, breaks = scaled_breaks_forest) +
-  scale_linetype_discrete(name = "Snow water \n equivalent", labels = unscaled_labels_prcp)+
-  scale_fill_manual(name = "Snow water \n equivalent", values=c("#666666", "#3399FF", "#0000FF"),labels = unscaled_labels_prcp)
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .2) +theme_classic() +
+  theme(legend.title.align = 0.5,
+        legend.position = c(.3, 1.07),
+        legend.justification = c("right", "top"),
+        legend.box.just = "right",
+        legend.margin = margin(6, 6, 6, 6),
+        legend.title = element_text(size=20),
+        legend.text = element_text(size=20),
+        axis.text.y = element_text(size = 20),
+        axis.text.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20)) +
+  scale_x_continuous(labels = unscaled_proportion_labels, breaks = scaled_breaks_open,
+                     limits = c(min(scaled_breaks_open), max(scaled_breaks_open))) +
+  scale_linetype_discrete(name = "Precipitation", labels = unscaled_labels_swe)+
+  scale_fill_manual(name = "Precipitation", values=c("#666666", "#3399FF", "#0000FF"),labels = unscaled_labels_swe)+
+  xlab ("Proportion of open") + ylab("")
+
+
+###
+
+###plot  figure
+
+legend <- get_legend(
+  # create some space to the left of the legend
+  ba 
+)
+pgrid3 <- plot_grid(a,b,c,d,e,f, align ='vh', hjust = -1,
+                    labels = c("C"), 
+                    ncol = 3, nrow=2, label_size = 35, label_x = -0.03, label_y = 1.03)
+
+plot3 <- pgrid3 + draw_grob(legend, x =  0.0111, y =  0.480, scale = 0.020)
+
+###save
+save_plot("plot_Fig4.C.pdf", plot3,
+          ncol = 3, # we're saving a grid plot of 2 columns
+          nrow = 2, # and 2 rows
+          # each individual subplot should have an aspect ratio of 1.3
+          base_asp = 1
+)
+
+save_plot("plot_Fig4.C.png", plot3,
+          ncol = 3, # we're saving a grid plot of 2 columns
+          nrow = 3, # and 2 rows
+          # each individual subplot should have an aspect ratio of 1.3
+          # base_aspect_ratio = 1
+          base_asp = 2
+          # base_width = 6
+)
+
 
 
 
