@@ -6,7 +6,7 @@ library(moveHMM)
 library(tseries)
 
 ## load data
-locs <-readRDS("~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/migration_MR.RDS")
+locs <-readRDS("output/migration_MR.RDS")
 
 
 ## Put the dataframe in order --> check year in first, then animal and then the date
@@ -55,7 +55,7 @@ mid.fit
 # [2,] 0.2053745 0.79462546
 
 
-saveRDS(mid.fit, '~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/mid.fit.RDS')
+saveRDS(mid.fit, 'output/mid.fit.RDS')
 
 
 
@@ -96,7 +96,4 @@ outMR$ptID<-c(1:nrow(outMR))
 outMR$ptID[duplicated(outMR$ptID)]
 outMR<-outMR[!duplicated(outMR$ptID), ]
 
-saveRDS(outMR, '~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/outMR.Rds')
-
-message('=== PREP COMPLETE ===')
-
+saveRDS(outMR, 'output/outMR.Rds')

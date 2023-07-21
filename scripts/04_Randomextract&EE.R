@@ -12,7 +12,7 @@ library(rgdal)
 
 #### Migration data
 
-Migr<-readRDS("~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/outMR.Rds")
+Migr<-readRDS("output/outMR.Rds")
 
 ## Re-order the data so it's in the correct order
 Migr<-Migr[order(Migr$IDYear,Migr$JDateTime),]
@@ -148,7 +148,7 @@ DataNewMidR<-rbind(PresDataMidR,RandDataMidR)
 DataNewMidR$ptID<-c(1:nrow(DataNewMidR))
 DataSortMidR<-DataNewMidR[order(DataNewMidR$JDate),]
 
-# saveRDS(DataSortMidR, "~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/Randoms_data_MigrationMR.RDS")
+# saveRDS(DataSortMidR, "output/Randoms_data_MigrationMR.RDS")
 
 
 
@@ -166,18 +166,18 @@ DataSortMidR<-subset(DataSortMidR,IsWater==0)
 #######Save file with obs/randoms pts##########
 # summary(DataSortMidR)
 names(DataSortMidR)[24]<-"Randoms"
-saveRDS(DataSortMidR, "~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/Randoms_data_MigrationMR.RDS")
+saveRDS(DataSortMidR, "output/Randoms_data_MigrationMR.RDS")
 
 
 #####subset data by random and obs points separately ########3
 DataSortMidR$Randoms <- as.factor(DataSortMidR$Randoms)
 Randoms<-subset(DataSortMidR, Randoms != "1")
 Observed<-subset(DataSortMidR, Randoms == "1")
-saveRDS(Randoms, "~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/Randoms_MR_mig.RDS")
-saveRDS(Observed, "~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/Observed_MR_mig.RDS")
+saveRDS(Randoms, "output/Randoms_MR_mig.RDS")
+saveRDS(Observed, "output/Observed_MR_mig.RDS")
 
-write.csv2(Randoms, "~/Internship 2019 Mun/Git/emilie_nlcaribou/output/Randoms_MR_mig.csv")
-write.csv2(Observed, "~/Internship 2019 Mun/Git/emilie_nlcaribou/output/Observed_MR_mig.csv")
+write.csv2(Randoms, "output/Randoms_MR_mig.csv")
+write.csv2(Observed, "output/Observed_MR_mig.csv")
 
 
 
@@ -201,8 +201,6 @@ Random3 <- as.data.table(Random3)
 Random4 <- as.data.table(Random4)
 
 #################Prepare folders with data.table/shp ######
-setwd("~/Internship 2019 Mun/Git/emilie_nlcaribou")
-
 build_pt_asset(
   DT = Random1,
   out = 'output/Random1-emilie-nlcaribou_2020',
@@ -246,16 +244,16 @@ build_pt_asset(
 #########AFTER DOWNLOADED DATA FROM EARTH ENGINE###########
 ###After EE
 obsDaymet <- fread('output/Observed-emilie-nlcaribou/observed-daymet.csv')
-rdm1Daymet <- fread('~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Random1-emilie-nlcaribou_2020/random1-daymet.csv')
-rdm2Daymet <- fread('~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Random2-emilie-nlcaribou_2020/random2-daymet-2.csv')
-rdm3Daymet <- fread('~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Random3-emilie-nlcaribou_2020/random3-daymet.csv')
-rdm4Daymet <- fread('~/Documents/Emilie_project/Git/emilie_nlcaribou/output/Random4-emilie-nlcaribou_2020/random4-daymet.csv')
+rdm1Daymet <- fread('output/Random1-emilie-nlcaribou_2020/random1-daymet.csv')
+rdm2Daymet <- fread('output/Random2-emilie-nlcaribou_2020/random2-daymet-2.csv')
+rdm3Daymet <- fread('output/Random3-emilie-nlcaribou_2020/random3-daymet.csv')
+rdm4Daymet <- fread('output/Random4-emilie-nlcaribou_2020/random4-daymet.csv')
 
 rdm3Daymet = subset(rdm3Daymet, select = -c(20:21))
 rdmDaymet <- rbindlist(list(rdm1Daymet, rdm2Daymet, rdm3Daymet, rdm4Daymet))
 
-obsNDSI <- fread("C:/Users/emitn/Documents/Internship 2019 Mun/Git/emilie_nlcaribou/output/ouput_gee/observed-ndsi.csv")
-RanNDSI <- fread("C:/Users/emitn/Documents/Internship 2019 Mun/Git/emilie_nlcaribou/output/ouput_gee/random-ndsi.csv")
+obsNDSI <- fread("output/ouput_gee/observed-ndsi.csv")
+RanNDSI <- fread("output/ouput_gee/random-ndsi.csv")
 
 ###Test if ndsi data are correct
 colnames(obsNDSI)
@@ -361,8 +359,8 @@ sum(is.na(mergeRdm$tmin))     ### O NAs all covariates
 sum(is.na(mergeRdm$vp))
 sum(is.na(mergeRdm$prcp))
 
-saveRDS(mergeObs, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/mergeObs.RDS")
-saveRDS(mergeRdm, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/mergeRdm.RDS")
+saveRDS(mergeObs, "output/mergeObs.RDS")
+saveRDS(mergeRdm, "output/mergeRdm.RDS")
 
 names(mergeObs)[7]<-"Animal_ID"
 names(mergeObs)[15]<-"JDateTime"
@@ -392,7 +390,7 @@ mergeObs$Time <- as.POSIXct(mergeObs$Time,format="%Y-%m-%d %H:%M:%S")
 
 ####Prepare data and save for extraction NDVI/weather 
 allweather <- rbind(mergeObs,mergeRdm)
-saveRDS(allweather, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/allweather.Rds")
+saveRDS(allweather, "output/allweather.Rds")
 
 #Migration2<-Migration[!is.na(mergeObs$swe),]
 #nrow(Migration2)
@@ -419,6 +417,6 @@ NewD2<-subset(NewD,StrMean>0)
 #summary(RSFdataR)
 ####savenewD2
 
-saveRDS(allNDVI, "~/Documents/Emilie_project/Git/emilie_nlcaribou/output/allNDVI.Rds")
+saveRDS(allNDVI, "output/allNDVI.Rds")
 
 

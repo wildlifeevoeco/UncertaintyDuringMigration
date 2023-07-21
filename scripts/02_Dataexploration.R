@@ -6,7 +6,7 @@ library(data.table)
 library(ggplot2)
 
 ### read file ####
-caribouclean<- readRDS("~/Documents/Emilie_project/Git/emilie_nlcaribou/output/AllmigrationMR.RDS")
+caribouclean<- readRDS("output/migration_MR.RDS")
 
 ## remove columns 
 caribouclean<-subset(caribouclean, select = -c(14:17))
@@ -31,7 +31,7 @@ indiv <- caribouclean %>%              ###some indiv move more than 30km but in 
   summarise(fixes = n(),
             numday = uniqueN(FixDate),
             Distancemig = unique(Displace))
-write.csv(indiv, '~/Documents/Emilie_project/Git/emilie_nlcaribou/output/indiv.csv')
+write.csv(indiv, 'output/indiv.csv')
 
 ##plot indiv on map
 ggplot(caribouclean[Animal_ID == "mr2009a06"],aes(Easting, Northing)) +
@@ -61,4 +61,4 @@ year <- caribouclean %>%
 #caribouclean[, uniqueN (ANIMAL_ID), by =.(HERD)]
 #caribouclean[, uniqueN(year), by =.(ANIMAL_ID)]
 
-saveRDS(caribouclean, '~/Documents/Emilie_project/Git/emilie_nlcaribou/output/cariboucleanMR.Rds')
+saveRDS(caribouclean, 'output/cariboucleanMR.Rds')
