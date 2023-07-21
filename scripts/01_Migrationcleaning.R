@@ -90,6 +90,15 @@ mig_MR_infos <- migration_MR %>%
             sd_dist = sd(Displace),
             total.fixes = n())
 
+## all year mean
+migration_MR %>%
+  mutate_if(is.numeric, round, 0)  %>%
+  summarise(mean_dur = mean(MigDuration),
+            sd_dur = sd(MigDuration),
+            mean_dis = mean(Displace),
+            sd_dis = sd(Displace))
+# mean_dur   sd_dur mean_dis   sd_dis
+# 61.50419 17.65666 60.88284 12.90966
 
 ##nb of locations
 numloc <- migration_MR %>%
