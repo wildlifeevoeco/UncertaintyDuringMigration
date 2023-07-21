@@ -1,5 +1,4 @@
 ###Cleaning migration data ###
-rm(list=ls())
 
 ##load packages
 # .libPaths("C:/R") # location of your R packages

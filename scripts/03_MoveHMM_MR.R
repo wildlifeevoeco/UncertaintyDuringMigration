@@ -1,5 +1,4 @@
 #### MoveHMM extraction###
-rm(list=ls())
 
 ### Packages ---
 libs <- c('data.table', 'moveHMM', 'tseries')

@@ -1,5 +1,4 @@
 #### Data cleaning and exploration ### 
-rm(list=ls())
 
 # load packages 
 .libPaths("C:/R") # location of your R packages

@@ -1,6 +1,5 @@
 ######### Extract randoms points for RSF ######## (Mike's code)
 
-rm(list=ls())
 
 ### Packages ---
 libs <- c('data.table', 'moveHMM',  'raster', 'adehabitatHR',
