@@ -1,8 +1,9 @@
 #### MoveHMM extraction###
 
 ### Packages ---
-libs <- c('data.table', 'moveHMM', 'tseries')
-lapply(libs, require, character.only = TRUE)
+library(data.table)
+library(moveHMM)
+library(tseries)
 
 ## load data
 locs <-readRDS("~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/migration_MR.RDS")

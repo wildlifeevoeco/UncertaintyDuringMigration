@@ -1,10 +1,14 @@
 ######### Extract randoms points for RSF ######## (Mike's code)
 
-
 ### Packages ---
-libs <- c('data.table', 'moveHMM',  'raster', 'adehabitatHR',
-          'dplyr', 'spatstat', 'maptools', 'data.table', 'rgdal', 'toast')
-lapply(libs, require, character.only = TRUE)
+library(data.table)
+library(moveHMM)
+library(raster)
+library(adehabitatHR)
+library(dplyr)
+library(spatstat)
+library(maptools)
+library(rgdal)
 
 #### Migration data
 

@@ -1,7 +1,6 @@
 ###Cleaning migration data ###
 
 ##load packages
-# .libPaths("C:/R") # location of your R packages
 library(dplyr)
 library(data.table)
 

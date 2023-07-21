@@ -1,11 +1,9 @@
 #### Data cleaning and exploration ### 
 
 # load packages 
-.libPaths("C:/R") # location of your R packages
 library(dplyr)
 library(data.table)
 library(ggplot2)
-lapply(libs,require, character.only = TRUE)
 
 ### read file ####
 caribouclean<- readRDS("~/Documents/Emilie_project/Git/emilie_nlcaribou/output/AllmigrationMR.RDS")
