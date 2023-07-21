@@ -16,7 +16,7 @@ projCols <- c('EASTING', 'NORTHING')
 utm21N <- '+proj=utm +zone=21 ellps=WGS84'
 
 ##open the csv
-migration <- read.csv("~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/input/MigrationDataNSD.csv")
+migration <- read.csv("input/MigrationDataNSD.csv")
 migration <- as.data.table(migration)
 migration <- migration[,-1]  
 
@@ -123,11 +123,11 @@ max(nbdays_id$numday) ## 94
 uniqueN(migration_MR$IDYear) ### 47 
 
 ##Save output
-write.csv(mig_MR_dates, '~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/tables/mig_MR_dates.csv')
-write.csv(mig_MR_infos, '~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/tables/mig_MR_infos.csv')
+write.csv(mig_MR_dates, 'output/tables/mig_MR_dates.csv')
+write.csv(mig_MR_infos, 'output/tables/mig_MR_infos.csv')
 
 
-saveRDS(migration_MR, '~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/migration_MR.RDS')
+saveRDS(migration_MR, 'output/migration_MR.RDS')
 
 
 message('=== PREP COMPLETE ===')
