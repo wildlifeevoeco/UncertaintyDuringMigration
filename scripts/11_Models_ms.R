@@ -3,10 +3,26 @@
 # Outputs: Logistic regression and condition logistic models 
 
 
-libs <- c('data.table', 'magrittr','dplyr', 'lubridate', 'lme4', 'mclogit', 'performance', 'ggeffects',
-          'tidyr', 'ggplot2','survival', 'patchwork', 'ggthemes', 'data.table',
-          'sjmisc', 'car', 'sjPlot', 'broom', 'paletteer', 'MuMIn', 'scales')
-lapply(libs, require, character.only = TRUE)
+library(data.table)
+library(magrittr)
+library(dplyr)
+library(lubridate)
+library(lme4)
+library(mclogit)
+library(performance)
+library(ggeffects)
+library(tidyr)
+library(ggplot2)
+library(survival)
+library(patchwork)
+library(ggthemes)
+library(sjmisc)
+library(car)
+library(sjPlot)
+library(broom)
+library(paletteer)
+library(MuMIn)
+library(scales)
 
 ## ##### First analysis : GLMM MODELS ### 
 paletteer::palettes_d_names

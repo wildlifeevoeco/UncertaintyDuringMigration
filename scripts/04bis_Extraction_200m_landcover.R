@@ -4,9 +4,16 @@
 
 
 ### Packages ---
-libs <- c('data.table', 'ggplot2', 'rgdal', 'spatsoc', 'amt',
-          'tidyverse', 'lubridate', 'raster', 'sp', 'adehabitatHR')
-lapply(libs, require, character.only = TRUE)
+library(data.table)
+library(ggplot2)
+library(rgdal)
+library(spatsoc)
+library(amt)
+library(tidyverse)
+library(lubridate)
+library(raster)
+library(sp)
+library(adehabitatHR)
 
 ##Input raw data
 allNDVI <- readRDS("C:/Users/emitn/Documents/Internship 2019 Mun/Git/emilie_nlcaribou/output/allNDVI.Rds")
