@@ -16,11 +16,11 @@ library(sp)
 library(adehabitatHR)
 
 ##Input raw data
-allNDVI <- readRDS("C:/Users/emitn/Documents/Internship 2019 Mun/Git/emilie_nlcaribou/output/allNDVI.Rds")
+allNDVI <- readRDS("output/allNDVI.Rds")
 
 ##Input landcover data
-lcNewfoundland <- raster("C:/Users/emitn/Documents/MUN MSc/Caribou_fitness_project/input/Landcover/FINAL_PRODUCT/FINAL_RC.tif") # This is a landcover map with different habitat types
-Legend <- fread("C:/Users/emitn/Documents/MUN MSc/Caribou_fitness_project/input/Landcover/FINAL_PRODUCT/FINAL_RC_legend.csv") 
+lcNewfoundland <- raster("../nl-landcover/input/FINAL_PRODUCT/FINAL_RC.tif")
+Legend <- fread("../nl-landcover/input/FINAL_PRODUCT/FINAL_RC_legend.csv") 
 
 #####Calculate MCP for MIDRIGDE
 allNDVI$Animal_ID <- as.character(allNDVI$Animal_ID) ### if not, mcp doesn't work
@@ -98,4 +98,4 @@ boxplot(Forest_200 ~ Randoms, data = allNDVI, "Lichen")
 colnames(allNDVI)
 Final_MR_migration<-allNDVI[order(allNDVI$IDYear,allNDVI$JDateTime),]
 
-saveRDS(Final_MR_migration, "~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/Final_MR_migration.RDS")
+saveRDS(Final_MR_migration, "output/Final_MR_migration.RDS")

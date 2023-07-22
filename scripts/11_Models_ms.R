@@ -2,7 +2,6 @@
 # Inputs: Final_MR_migration
 # Outputs: Logistic regression and condition logistic models 
 
-
 library(data.table)
 library(magrittr)
 library(dplyr)
@@ -29,7 +28,7 @@ paletteer::palettes_d_names
 paletteer_d("colorblindr::OkabeIto")
 # allNDVIobs <- fread("output/allNDVIobs.csv")
 
-Final_MR_migration <- readRDS("~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/Final_MR_migration.RDS")
+Final_MR_migration <- readRDS("output/Final_MR_migration.RDS")
 
 str(Final_MR_migration$state)
 
@@ -1097,7 +1096,7 @@ tab_model(model_interact_RSF_stop, dv.labels= "RSF - stopover")
 
 
 ###save dataset
-saveRDS(Final_MR_migration_RSF_stop, "~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/Final_MR_migration_RSF_stop.RDS")
+saveRDS(Final_MR_migration_RSF_stop, "output/Final_MR_migration_RSF_stop.RDS")
 
 ##### RSF Movement####
 ###M1 hab _ movement #####
@@ -1523,6 +1522,6 @@ tab_model(model_interact_RSF_stop, model_interact_RSF_mvt,pred.labels = c("Open"
 
 
 ###save data
-saveRDS(Final_MR_migration_RSF_mvt, "~/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/Final_MR_migration_RSF_mvt.RDS")
+saveRDS(Final_MR_migration_RSF_mvt, "output/Final_MR_migration_RSF_mvt.RDS")
 
 
