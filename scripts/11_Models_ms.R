@@ -70,9 +70,8 @@ save_plot("graphics/Step length distribution.png", a)
 
 save_plot("graphics/Angle distribution.png", b)
 
-
-require(gridExtra)
-require(cowplot)
+library(gridExtra)
+library(cowplot)
 plot_Fig1 <- plot_grid(a, b, align = 'hv',
                        labels = c("A", "B"),
                        ncol = 2)
