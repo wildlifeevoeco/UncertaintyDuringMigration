@@ -66,11 +66,10 @@ b <- ggplot(Final_MR_migration_obs, aes(x = angle)) +
 
 ###Bind plot together and save them
 ##individually
-setwd("C:/Users/emitn/Documents/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/Figures")
+save_plot("graphics/Step length distribution.png", a)
 
-save_plot("Step length distribution.png", a)
+save_plot("graphics/Angle distribution.png", b)
 
-save_plot("Angle distribution.png", b)
 
 require(gridExtra)
 require(cowplot)
@@ -358,14 +357,13 @@ aictab(cand.set = models, modnames = mod.names)
 
 ###summary output model####
 library(stargazer)
-setwd( "C:/Users/emitn/Documents/Internship 2019 Mun/Git/emilie_nlcaribou_2020/output/tables")
 stargazer(M1_all_inter, type = "html",
           column.labels = c("Weather","Habitat"),
           intercept.bottom =  FALSE,
           single.row = FALSE,
           notes.append = FALSE,
           header = FALSE,
-          out = "Best_HMM_model.html")
+          out = "output/tables/Best_HMM_model.html")
 
 ##extract coeff
 # library(ggeffects)
@@ -575,14 +573,14 @@ plot <- pgrid + draw_grob(legend, x =  0.0111, y =  0.480, scale = 0.020)
 # 
 # plot_Fig4.A <- plot_grid(plot_Fig4.A, ncol=1) # rel_heights values control title margins
 
-save_plot("plot_Fig4.A.pdf", plot,
+save_plot("graphics/plot_Fig4.A.pdf", plot,
           ncol = 3, # we're saving a grid plot of 2 columns
           nrow = 2, # and 2 rows
           # each individual subplot should have an aspect ratio of 1.3
            base_asp = 1
 )
 
-save_plot("plot_Fig4.A.png", plot,
+save_plot("graphics/plot_Fig4.A.png", plot,
           ncol = 3, # we're saving a grid plot of 2 columns
           nrow = 3, # and 2 rows
           # each individual subplot should have an aspect ratio of 1.3
@@ -1032,14 +1030,14 @@ pgrid2 <- plot_grid(a,b,c,d,e,f, align ='vh', hjust = -1,
 plot2 <- pgrid2 + draw_grob(legend, x =  0.0111, y =  0.480, scale = 0.020)
 
 ###save
-save_plot("plot_Fig4.B.pdf", plot2,
+save_plot("graphics/plot_Fig4.B.pdf", plot2,
           ncol = 3, # we're saving a grid plot of 2 columns
           nrow = 2, # and 2 rows
           # each individual subplot should have an aspect ratio of 1.3
           base_asp = 1
 )
 
-save_plot("plot_Fig4.B.png", plot2,
+save_plot("graphics/plot_Fig4.B.png", plot2,
           ncol = 3, # we're saving a grid plot of 2 columns
           nrow = 3, # and 2 rows
           # each individual subplot should have an aspect ratio of 1.3
@@ -1256,7 +1254,7 @@ plot_Fig2 <- plot_grid(a, b, c, align = 'hv',
                         labels = c("A", "B", "C"),
                         ncol = 3, nrow=1)
 
-save_plot("plot_Fig2.pdf", plot_Fig2,
+save_plot("graphics/plot_Fig2.pdf", plot_Fig2,
           ncol = 3, # we're saving a grid plot of 2 columns
           nrow = 1, # and 2 rows
           # each individual subplot should have an aspect ratio of 1.3
@@ -1473,14 +1471,14 @@ pgrid3 <- plot_grid(a,b,c,d,e,f, align ='vh', hjust = -1,
 plot3 <- pgrid3 + draw_grob(legend, x =  0.0111, y =  0.480, scale = 0.020)
 
 ###save
-save_plot("plot_Fig4.C.pdf", plot3,
+save_plot("graphics/plot_Fig4.C.pdf", plot3,
           ncol = 3, # we're saving a grid plot of 2 columns
           nrow = 2, # and 2 rows
           # each individual subplot should have an aspect ratio of 1.3
           base_asp = 1
 )
 
-save_plot("plot_Fig4.C.png", plot3,
+save_plot("graphics/plot_Fig4.C.png", plot3,
           ncol = 3, # we're saving a grid plot of 2 columns
           nrow = 3, # and 2 rows
           # each individual subplot should have an aspect ratio of 1.3
