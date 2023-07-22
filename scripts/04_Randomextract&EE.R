@@ -201,6 +201,7 @@ Random3 <- as.data.table(Random3)
 Random4 <- as.data.table(Random4)
 
 #################Prepare folders with data.table/shp ######
+source('R/build_pt_asset.R')
 build_pt_asset(
   DT = Random1,
   out = 'output/Random1-emilie-nlcaribou_2020',
