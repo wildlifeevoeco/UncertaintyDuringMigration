@@ -126,8 +126,3 @@ write.csv(mig_MR_infos, 'output/tables/mig_MR_infos.csv')
 
 
 saveRDS(migration_MR, 'output/migration_MR.RDS')
-
-
-message('=== PREP COMPLETE ===')
-
-
