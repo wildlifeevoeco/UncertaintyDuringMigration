@@ -54,7 +54,8 @@ uniqueN(mig$Animal_ID) ###107 indiv after removed < 30km and false MR migration
 
 ##Subsetting only Middle Ridge herd
 migration_MR<-subset(mig, Herd=="MIDRIDGE")
-migration_MR$Herd <- droplevels(migration_MR$Herd)
+# TODO: no applicable methods for character
+#migration_MR$Herd <- droplevels(migration_MR$Herd)
 unique(migration_MR$Herd)
 uniqueN(migration_MR$Animal_ID) ####30 ids
 
