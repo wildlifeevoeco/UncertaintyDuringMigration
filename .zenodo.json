@@ -1,0 +1,29 @@
+{
+  "description": "<p>This repository contains the code accompanying the paper &ldquo;Uncertainty on migration: selecting predictable resources in unpredictable conditions &rdquo;.</p>", 
+  "title": "Code accompanying - Uncertainty on migration: selecting predictable resources in unpredictable conditions", 
+  "creators": [
+    {
+      "affiliation": "Memorial University", 
+      "name": "Emilie Dedeban"
+    }, 
+    {
+      "orcid": "0000-0002-0434-9360", 
+      "affiliation": "Guelph University", 
+      "name": "Quinn M.R. Webber"
+    }, 
+    {
+      "affiliation": "Memorial University", 
+      "name": "Michel Laforge"
+    }, 
+    {
+      "orcid": "0000-0002-4706-1762", 
+      "affiliation": "Memorial University", 
+      "name": "Alec L. Robitaille"
+    }, 
+    {
+      "orcid": "0000-0002-8534-4317", 
+      "affiliation": "Memorial University", 
+      "name": "Eric Vander Wal"
+    }
+  ]
+}
