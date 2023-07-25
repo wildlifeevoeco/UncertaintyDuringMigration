@@ -1,6 +1,9 @@
 # Uncertainty during migration: selecting predictable resources in unpredictable conditions
 
 
+[![DOI](https://zenodo.org/badge/670727898.svg)](https://zenodo.org/badge/latestdoi/670727898)
+
+
 -   Authors:
     - Emilie Dedeban
     - Quinn M.R. Webber
