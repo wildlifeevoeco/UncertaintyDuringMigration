@@ -9,6 +9,12 @@
     - [Eric Vander Wal](http://weel.gitlab.io)
 
 
+This repository contains the code accompanying the paper “Uncertainty on 
+migration: selecting predictable resources in unpredictable conditions”. 
+R scripts are under `scripts/`, Earth Engine scripts under `EE/` 
+and reused R functions are in `R/`.
+
+
 ##  Abstract
 
 Environmental and climatic variation drive animal migration. Animals must adjust their
